@@ -1,0 +1,9 @@
+int f (int a){
+ rat a = [3/2];
+ print a;
+ return 0;
+}
+
+main {
+    print (call f (1));
+}
