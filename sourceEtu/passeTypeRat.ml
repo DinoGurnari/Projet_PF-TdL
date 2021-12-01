@@ -113,8 +113,9 @@ let rec analyse_type_instruction i tf =
   | AstSyntax.Affichage e -> 
     let (ne, te) = analyse_type_expression e in
       match te with
-      | Int -> AffichageInt e
-      | 
+      | Int -> AffichageInt ne
+      | Rat -> AffichageRat ne
+      | Bool -> AffichageBool ne
 
   | AstSyntax.Conditionnelle (c,t,e) -> 
       (* Analyse de la condition *)
