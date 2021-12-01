@@ -50,6 +50,14 @@ let chercherLocalement tds nom =
   | Nulle -> None
   | Courante (_,c) ->  find_opt c nom 
 
+(* Renvoie le type d'une info ast *)
+let getType ia =
+  let info = info_ast_to_info ia in
+  match info with
+  | InfoConst _ -> Int
+  | InfoVar (_, t, _, _) -> t
+  | InfoFun (_, t, _) -> t
+
 (* TESTS *)
 let%test _ = chercherLocalement (creerTDSMere()) "x" = None
 let%test _ = 
