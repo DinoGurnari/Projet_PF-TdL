@@ -25,8 +25,11 @@ let rec analyse_tds_expression tds e =
     match Tds.chercherGlobalement tds id with
     | None -> raise (IdentifiantNonDeclare id)
     | Some ia -> 
-      let liste = List.map(analyse_tds_expression tds) listExp in
-      AstTds.AppelFonction(ia, liste)
+      match (info_ast_to_info ia) with 
+      | InfoFun _ ->
+        let liste = List.map(analyse_tds_expression tds) listExp in
+        AstTds.AppelFonction(ia, liste)
+      | _ -> raise (MauvaiseUtilisationIdentifiant id)
     end
   (* Accès à un identifiant représenté par son nom *)
   | AstSyntax.Ident(id) ->
@@ -180,13 +183,25 @@ let analyse_tds_fonction maintds (AstSyntax.Fonction(t,n,lp,li))  =
   match chercherLocalement maintds n with
   | Some _ -> raise (DoubleDeclaration n)
   | None ->
-    let listUnde = List.map (fun l -> Undefined) lp in
-    let infof = InfoFun(n,Undefined, listUnde) in
+    let infof = InfoFun(n,Undefined, []) in
     let ia = info_to_info_ast infof in 
       ajouter maintds n ia;
-    let tdsbloc = creerTDSFille tds in
-    
-    
+    let tdsbloc = creerTDSFille maintds in
+      let ajouter_para (typage, x) =   
+        match chercherLocalement tdsbloc x with
+        | None ->
+          let info = InfoVar (x,Undefined, 0, "") in
+          let ia = info_to_info_ast info in
+          ajouter tdsbloc x ia; 
+          (typage, ia) 
+        | Some _ ->
+          raise (DoubleDeclaration x)
+        in 
+          let lpn = List.map ajouter_para lp in
+          let lin = List.map (analyse_tds_instruction tdsbloc) li in
+          Fonction(t,ia,lpn,lin)    
+              
+       
 
 (* analyser : AstSyntax.ast -> AstTds.ast *)
 (* Paramètre : le programme à analyser *)
