@@ -59,6 +59,22 @@ let getType ia =
   | InfoFun (_, t, _) -> t
 
 (* TESTS *)
+let%test _ = 
+  let tds = creerTDSMere() in
+  let ic = info_to_info_ast (InfoConst ("c", 15)) in
+    ajouter tds "c" ic;
+    getType ic = Int
+let%test _ =
+  let tds = creerTDSMere() in
+  let ix = info_to_info_ast (InfoVar ("x", Rat, 0, "SB")) in
+    ajouter tds "x" ix;
+    getType ix = Rat
+let%test _ =
+  let tds = creerTDSMere() in
+  let info = info_to_info_ast (InfoFun ("f", Bool, [])) in
+    ajouter tds "f" info;
+    getType info = Bool
+
 let%test _ = chercherLocalement (creerTDSMere()) "x" = None
 let%test _ = 
   let tds = creerTDSMere() in

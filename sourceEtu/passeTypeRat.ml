@@ -11,7 +11,7 @@ struct
   type t1 = Ast.AstTds.programme
   type t2 = Ast.AstType.programme
 
-(* analyse_type_expression : AstTds.expression -> AstType.expression *)
+(* analyse_type_expression : AstTds.expression -> (AstType.expression * typ) *)
 (* Paramètre e : l'expression à analyser *)
 (* Vérifie la bonne utilisation des types et tranforme l'expression
 en une expression de type AstType.expression *)
@@ -21,7 +21,19 @@ let rec analyse_type_expression e =
   (* Appel de fonction représenté par le nom de la fonction et la liste des paramètres réels *)
   | AstTds.AppelFonction(ia, listExp) -> 
     let listExpN = List.map analyse_type_expression listExp in
-      (AstType.AppelFonction(ia, listExpN), getType ia)
+    let listExpSansTypes = List.map (fun (x,y) -> x) listExpN in
+    let listTypesExp = List.map (fun (x,y) -> y) listExpN in
+    let info = info_ast_to_info ia in
+      begin
+      match info with
+      | InfoFun (_, _, listTypesPara) -> 
+        let egalite = List.equal (fun x y -> x = y) listTypesExp listTypesPara in
+        if egalite then
+          (AstType.AppelFonction(ia, listExpSansTypes), getType ia)
+        else
+          raise (TypesParametresInattendus (listTypesExp, listTypesPara))
+      | _ -> failwith "Erreur interne : Pas possible"
+      end
   (* Accès à un identifiant représenté par son nom *)
   | AstTds.Ident(ia) ->
     (AstType.Ident(ia), getType ia)
@@ -34,9 +46,11 @@ let rec analyse_type_expression e =
   (* Opération unaire représentée par l'opérateur et l'opérande *)
   | AstTds.Unaire(un, expr) ->
     let (ne, te) = analyse_type_expression expr in
+      begin
       match te with
       | Rat -> (AstType.Unaire(un, ne), Int)
-      | _ -> raise (TypeInattendu (Rat, te))
+      | _ -> raise (TypeInattendu (te, Rat))
+      end
   (* Opération binaire représentée par l'opérateur, l'opérande gauche et l'opérande droite *)
   | AstTds.Binaire(bin, expression1, expression2) ->
     let (ne1, te1) = analyse_type_expression expression1 in
@@ -92,9 +106,9 @@ let rec analyse_type_expression e =
 (* Vérifie la bonne utilisation des types et tranforme l'instruction
 en une instruction de type AstType.instruction *)
 (* Erreur si mauvaise utilisation des types *)
-let rec analyse_type_instruction i tf =
+let rec analyse_type_instruction tf i =
   match i with
-  | AstSyntax.Declaration (t, ia, e) ->
+  | AstTds.Declaration (t, ia, e) ->
     modifier_type_info t ia;
     let (ne, te) = analyse_type_expression e in
       if t = te then 
@@ -102,7 +116,7 @@ let rec analyse_type_instruction i tf =
       else
         raise (TypeInattendu (te, t))
 
-  | AstSyntax.Affectation (ia, e) ->
+  | AstTds.Affectation (ia, e) ->
     let t = getType ia in
     let (ne, te) = analyse_type_expression e in
       if t = te then 
@@ -110,33 +124,80 @@ let rec analyse_type_instruction i tf =
       else
         raise (TypeInattendu (te, t))
 
-  | AstSyntax.Affichage e -> 
+  | AstTds.Affichage e -> 
     let (ne, te) = analyse_type_expression e in
+      begin
       match te with
       | Int -> AffichageInt ne
       | Rat -> AffichageRat ne
       | Bool -> AffichageBool ne
+      | tr -> raise (TypeInattendu (tr, te))
+      end
 
-  | AstSyntax.Conditionnelle (c,t,e) -> 
-      (* Analyse de la condition *)
-      let nc = analyse_tds_expression tds c in
-      (* Analyse du bloc then *)
-      let tast = analyse_tds_bloc tds t in
-      (* Analyse du bloc else *)
-      let east = analyse_tds_bloc tds e in
-      (* Renvoie la nouvelle structure de la conditionnelle *)
-      Conditionnelle (nc, tast, east)
-  | AstSyntax.TantQue (c,b) -> 
-      (* Analyse de la condition *)
-      let nc = analyse_tds_expression tds c in
-      (* Analyse du bloc *)
-      let bast = analyse_tds_bloc tds b in
-      (* Renvoie la nouvelle structure de la boucle *)
-      TantQue (nc, bast)
-  | AstSyntax.Retour (e) -> 
-      (* Analyse de l'expression *)
-      let ne = analyse_tds_expression tds e in
-      Retour (ne)
+  | AstTds.Conditionnelle (c,t,e) -> 
+    let (nc, te) = analyse_type_expression c in
+      if te != Bool then
+        raise (TypeInattendu (te, Bool))
+      else
+        let nt = analyse_type_bloc tf t in
+        let ne = analyse_type_bloc tf e in
+          Conditionnelle(nc, nt, ne)
+  | AstTds.TantQue (c,b) -> 
+    let (nc, te) = analyse_type_expression c in
+      if te != Bool then
+        raise (TypeInattendu (te, Bool))
+      else 
+        let nb = analyse_type_bloc tf b in
+        TantQue (nc, nb)
+  | AstTds.Retour (e) -> 
+    let (ne, te) = analyse_type_expression e in
+      begin
+      match tf with
+      | None -> raise (RetourDansMain)
+      | Some t ->  
+        if t = te then
+          Retour(ne)
+        else
+          raise (TypeInattendu(te, t))
+      end
+  | AstTds.Empty ->
+    AstType.Empty
+          
+(* analyse_type_bloc : AstTds.bloc -> AstType.bloc *)
+(* Paramètre li : liste d'instructions à analyser *)
+(* Vérifie la bonne utilisation des types et tranforme le bloc
+en un bloc de type AstType.bloc *)
+(* Erreur si mauvaise utilisation des types *)
+and analyse_type_bloc tf li =
+  let nli =List.map (analyse_type_instruction tf) li in 
+  nli
 
+(* analyse_tds_fonction : AstSyntax.fonction -> AstTds.fonction *)
+(* Paramètre tds : la table des symboles courante *)
+(* Paramètre : la fonction à analyser *)
+(* Vérifie la bonne utilisation des identifiants et tranforme la fonction
+en une fonction de type AstTds.fonction *)
+(* Erreur si mauvaise utilisation des identifiants *)
+let analyse_type_fonction (AstTds.Fonction(t,ia,lp,li))  =
+  let analyser_type_para (t, ia) =
+    modifier_type_info t ia;
+    ia
+  in
+  let nlp = List.map analyser_type_para lp in
+  let listeTypes = List.map (fun (x, y) -> x) lp in
+    modifier_type_fonction_info t listeTypes ia;
+    let nli = analyse_type_bloc (Some t) li in
+      AstType.Fonction(ia, nlp, nli)
+
+
+(* analyser : AstTds.ast -> AstType.ast *)
+(* Paramètre : le programme à analyser *)
+(* Vérifie la bonne utilisation des types et tranforme le programme
+en un programme de type AstType.ast *)
+(* Erreur si mauvaise utilisation des types *)
+let analyser (AstTds.Programme (fonctions,prog)) =
+  let nf = List.map analyse_type_fonction fonctions in 
+  let nb = analyse_type_bloc None prog in
+  Programme (nf,nb)  
 
 end

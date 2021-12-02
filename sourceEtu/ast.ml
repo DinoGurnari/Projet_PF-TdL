@@ -114,9 +114,6 @@ end
 module AstType =
 struct
 
-(* Opérateurs unaires de Rat - résolution de la surcharge *)
-type unaire = Numerateur | Denominateur
-
 (* Opérateurs binaires existants dans Rat - résolution de la surcharge *)
 type binaire = Fraction | PlusInt | PlusRat | MultInt | MultRat | EquInt | EquBool | Inf
 
@@ -127,7 +124,7 @@ type expression =
   | Ident of Tds.info_ast
   | Booleen of bool
   | Entier of int
-  | Unaire of unaire * expression
+  | Unaire of AstSyntax.unaire * expression
   | Binaire of binaire * expression * expression
 
 (* instructions existantes Rat *)
