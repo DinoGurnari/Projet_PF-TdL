@@ -172,12 +172,11 @@ and analyse_type_bloc tf li =
   let nli =List.map (analyse_type_instruction tf) li in 
   nli
 
-(* analyse_tds_fonction : AstSyntax.fonction -> AstTds.fonction *)
-(* Paramètre tds : la table des symboles courante *)
+(* analyse_tds_fonction : AstTds.fonction -> AstType.fonction *)
 (* Paramètre : la fonction à analyser *)
-(* Vérifie la bonne utilisation des identifiants et tranforme la fonction
-en une fonction de type AstTds.fonction *)
-(* Erreur si mauvaise utilisation des identifiants *)
+(* Vérifie la bonne utilisation des types et tranforme la fonction
+en une fonction de type AstType.fonction *)
+(* Erreur si mauvaise utilisation des types *)
 let analyse_type_fonction (AstTds.Fonction(t,ia,lp,li))  =
   let analyser_type_para (t, ia) =
     modifier_type_info t ia;

@@ -1,5 +1,5 @@
 (* Module de la passe de placement mémoire *)
-module PasseTypeRat : Passe.Passe with type t1 = Ast.AstType.programme and type t2 = Ast.AstPlacement.programme =
+module PassePlacementRat : Passe.Passe with type t1 = Ast.AstType.programme and type t2 = Ast.AstPlacement.programme =
 struct
 
   open Tds
@@ -18,6 +18,9 @@ struct
 let rec analyse_placement_expression e =
   e
 
+
+
+
 (* analyse_placement_instruction : AstType.instruction -> AstPlacement.instruction *)
 (* Paramètre reg : registre à utiliser *)
 (* Paramètre dep : déplacement dans la mémoire *)
@@ -27,41 +30,69 @@ let rec analyse_placement_instruction reg dep i =
   match i with
   | AstType.Declaration (ia, e) ->
     modifier_adresse_info dep reg ia;
-    begin
     let t = getType ia in
+      begin
       match t with
       | Rat -> (i, dep + 2)
       | _ -> (i, dep + 1)
+      end
 
   | AstType.Conditionnelle (c,t,e) -> 
-    let _ = analyser_placement_bloc reg dep t in
-    let _ = analyser_placement_bloc reg dep e in
+    let _ = analyse_placement_bloc reg dep t in
+    let _ = analyse_placement_bloc reg dep e in
       (i, dep)
 
   | AstType.TantQue (c,b) -> 
-    let _ = analyser_placement_bloc reg dep b in
+    let _ = analyse_placement_bloc reg dep b in
       (i, dep)
 
   | _ -> (i, dep)
-
 (* analyse_placement_bloc : AstType.bloc -> AstPlacement.bloc *)
 (* Paramètre reg : registre à utiliser *)
 (* Paramètre dep : déplacement dans la mémoire *)
 (* Paramètre li : liste d'instructions à analyser *)
 (* Place la mémoire et renvoie une AstPlacement.bloc *)
-and rec analyse_placement_bloc reg dep li =
+and analyse_placement_bloc reg dep li =
   match li with
   | [] -> []
   | i::q -> 
     let (ni, ndep) = analyse_placement_instruction reg dep i in
       ni::(analyse_placement_bloc reg ndep q)
 
+let rec analyse_placement_param dep rlp = 
+  match rlp with
+    | [] -> []
+    | ia :: q -> 
+      let getTaille  ia = 
+      let typ = getType ia in
+      match typ with
+        | Rat -> 2
+        | _ -> 1
+        in
+        let d = getTaille ia in 
+        modifier_adresse_info (dep - d) "LB" ia;
+        ia::(analyse_placement_param (dep - d) q)
+
+
+(* analyse_tds_fonction : AstSyntax.fonction -> AstTds.fonction *)
+(* Paramètre tds : la table des symboles courante *)
+(* Paramètre : la fonction à analyser *)
+(* Vérifie la bonne utilisation des identifiants et tranforme la fonction
+en une fonction de type AstTds.fonction *)
+(* Erreur si mauvaise utilisation des identifiants *)
+let analyse_placement_fonction (AstType.Fonction(ia,lp,li))  =
+  let nb = analyse_placement_bloc "LB" 3 li in 
+  let nlp = analyse_placement_param 0 (List.rev lp) in
+  AstPlacement.Fonction(ia,nlp, nb)
+
+
+
 (* analyser : AstType.ast -> AstPlacement.ast *)
 (* Paramètre : le programme à analyser *)
 (* Place la mémoire et renvoie une AstPlacement.bloc *)
 let analyser (AstType.Programme (fonctions,prog)) =
   let nf = List.map analyse_placement_fonction fonctions in 
-  let nb = analyse_placement_bloc SB 0 prog in
+  let nb = analyse_placement_bloc "SB" 0 prog in
   Programme (nf,nb)  
 
 end

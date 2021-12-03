@@ -58,6 +58,12 @@ let getType ia =
   | InfoVar (_, t, _, _) -> t
   | InfoFun (_, t, _) -> t
 
+let getTaille  ia = 
+  let typ = getType ia in
+  match typ with
+  | Rat -> 2
+  | _ -> 1
+
 (* TESTS *)
 let%test _ = 
   let tds = creerTDSMere() in
@@ -74,6 +80,22 @@ let%test _ =
   let info = info_to_info_ast (InfoFun ("f", Bool, [])) in
     ajouter tds "f" info;
     getType info = Bool
+
+let%test _ = 
+  let tds = creerTDSMere() in
+  let ic = info_to_info_ast (InfoConst ("c", 15)) in
+    ajouter tds "c" ic;
+    getTaille ic = 1
+let%test _ =
+  let tds = creerTDSMere() in
+  let ix = info_to_info_ast (InfoVar ("x", Rat, 0, "SB")) in
+    ajouter tds "x" ix;
+    getTaille ix = 2
+let%test _ =
+  let tds = creerTDSMere() in
+  let info = info_to_info_ast (InfoFun ("f", Bool, [])) in
+    ajouter tds "f" info;
+    getTaille info = 1
 
 let%test _ = chercherLocalement (creerTDSMere()) "x" = None
 let%test _ = 
