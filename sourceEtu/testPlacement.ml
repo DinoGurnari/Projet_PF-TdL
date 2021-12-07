@@ -41,10 +41,10 @@ let test fichier fonction (var,occ) (dep,registre) =
   in aux occ lmain
 
 (**** sans fonctions ****)
-(* 
+
 let%test "test1_x" = 
-  test "../../fichiersRat/src-rat-placement-test/test1.rat"  "main" ("x",0)  (0,"SB")
- *)
+  test "../../fichiersRat/src-rat-placement-test/test1.rat"  "main" ("x",1)  (0,"SB")
+
 let%test "test2_x" = 
   test "../../fichiersRat/src-rat-placement-test/test2.rat"  "main" ("x",1)  (0,"SB")
 

@@ -18,9 +18,6 @@ struct
 let rec analyse_placement_expression e =
   e
 
-
-
-
 (* analyse_placement_instruction : AstType.instruction -> AstPlacement.instruction *)
 (* Paramètre reg : registre à utiliser *)
 (* Paramètre dep : déplacement dans la mémoire *)
@@ -47,6 +44,7 @@ let rec analyse_placement_instruction reg dep i =
       (i, dep)
 
   | _ -> (i, dep)
+
 (* analyse_placement_bloc : AstType.bloc -> AstPlacement.bloc *)
 (* Paramètre reg : registre à utiliser *)
 (* Paramètre dep : déplacement dans la mémoire *)
@@ -64,15 +62,14 @@ let rec analyse_placement_param dep rlp =
     | [] -> []
     | ia :: q -> 
       let getTaille  ia = 
-      let typ = getType ia in
-      match typ with
-        | Rat -> 2
-        | _ -> 1
-        in
+        let typ = getType ia in
+        match typ with
+          | Rat -> 2
+          | _ -> 1
+      in
         let d = getTaille ia in 
-        modifier_adresse_info (dep - d) "LB" ia;
-        ia::(analyse_placement_param (dep - d) q)
-
+          modifier_adresse_info (dep - d) "LB" ia;
+          ia::(analyse_placement_param (dep - d) q)
 
 (* analyse_tds_fonction : AstSyntax.fonction -> AstTds.fonction *)
 (* Paramètre tds : la table des symboles courante *)
@@ -84,8 +81,6 @@ let analyse_placement_fonction (AstType.Fonction(ia,lp,li))  =
   let nb = analyse_placement_bloc "LB" 3 li in 
   let nlp = analyse_placement_param 0 (List.rev lp) in
   AstPlacement.Fonction(ia,nlp, nb)
-
-
 
 (* analyser : AstType.ast -> AstPlacement.ast *)
 (* Paramètre : le programme à analyser *)

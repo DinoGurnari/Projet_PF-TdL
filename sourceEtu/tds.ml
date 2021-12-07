@@ -58,11 +58,17 @@ let getType ia =
   | InfoVar (_, t, _, _) -> t
   | InfoFun (_, t, _) -> t
 
-let getTaille  ia = 
+let getTaille ia = 
   let typ = getType ia in
   match typ with
   | Rat -> 2
   | _ -> 1
+
+let getAdresse ia =
+  let info = info_ast_to_info ia in
+  match info with
+  | InfoVar (_,_,_,a) -> a
+  | _ -> failwith "Pas possible"
 
 (* TESTS *)
 let%test _ = 
