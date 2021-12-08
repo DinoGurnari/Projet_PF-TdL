@@ -67,8 +67,16 @@ let getTaille ia =
 let getAdresse ia =
   let info = info_ast_to_info ia in
   match info with
-  | InfoVar (_,_,_,a) -> a
+  | InfoVar(_,_,_,a) -> a
   | _ -> failwith "Pas possible"
+
+let getTaillePara ia = 
+  let info = info_ast_to_info ia in
+  match info with
+  | InfoFun(_,_,lp) ->
+    List.fold_left (fun a b -> a + Type.getTaille b) 0 lp
+  | _ -> 
+    failwith "impossible"
 
 (* TESTS *)
 let%test _ = 

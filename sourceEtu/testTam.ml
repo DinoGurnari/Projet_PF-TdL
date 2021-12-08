@@ -1,8 +1,8 @@
-(*
+
 open Compilateur
 
 (* Changer le chemin d'accès du jar. *)
-let runtamcmde = "java -jar ../../runtam.jar"
+let runtamcmde = "java -jar /home/vlebrun2/Annee_2/PF/TP-TdL/sourceEtu/runtam.jar"
 (* let runtamcmde = "java -jar /mnt/n7fs/.../tools/runtam/runtam.jar" *)
 
 (* Execute the TAM code obtained from the rat file and return the ouptut of this code *)
@@ -110,4 +110,4 @@ let%expect_test "factrec" =
   runtam "../../fichiersRat/src-rat-tam-test/factrec.rat";
   [%expect{| 120 |}]
 
-*)
+

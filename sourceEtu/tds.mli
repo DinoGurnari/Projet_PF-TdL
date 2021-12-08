@@ -64,3 +64,12 @@ val modifier_adresse_info : int -> string -> info_ast -> unit
 
 (* Renvoie le type d'une info ast *)
 val getType : info_ast -> typ
+
+(* Renvoie le type d'une info ast *)
+val getTaille : info_ast -> int
+
+(* Renvoie le type d'une info ast *)
+val getAdresse: info_ast -> string
+
+(* Renvoie le type d'une info ast *)
+val getTaillePara: info_ast -> int

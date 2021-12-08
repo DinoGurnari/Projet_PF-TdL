@@ -71,12 +71,9 @@ let rec analyse_placement_param dep rlp =
           modifier_adresse_info (dep - d) "LB" ia;
           ia::(analyse_placement_param (dep - d) q)
 
-(* analyse_tds_fonction : AstSyntax.fonction -> AstTds.fonction *)
-(* Paramètre tds : la table des symboles courante *)
+(* analyse_tds_fonction : AstType.fonction -> AstPlacement.fonction *)
 (* Paramètre : la fonction à analyser *)
-(* Vérifie la bonne utilisation des identifiants et tranforme la fonction
-en une fonction de type AstTds.fonction *)
-(* Erreur si mauvaise utilisation des identifiants *)
+(* Place la mémoire et renvoie une AstPlacement.Fonction *)
 let analyse_placement_fonction (AstType.Fonction(ia,lp,li))  =
   let nb = analyse_placement_bloc "LB" 3 li in 
   let nlp = analyse_placement_param 0 (List.rev lp) in
