@@ -28,16 +28,16 @@ let rec generation_code_expression e =
   | AstType.Ident(ia) ->
     let adr = getAdresse ia in
     let t = Tds.getTaille ia in
-      "LOAD (" ^ string_of_int t ^ ") " ^ adr ^ "\n" 
+      "LOAD (" ^ string_of_int t ^ ") " ^ adr  
   (* Booléen *)
   | AstType.Booleen(bool) ->
     if (bool) then 
-      "LOADL 1\n"
+      "LOADL 1"
     else
-      "LOADL 0\n"
+      "LOADL 0"
   (* Entier *)
   | AstType.Entier(int) ->
-    "LOADL " ^ string_of_int int ^ "\n"
+    "LOADL " ^ string_of_int int
   (* Opération unaire représentée par l'opérateur et l'opérande *)
   | AstType.Unaire(un, expr) ->
     let code_de_e = generation_code_expression expr in
