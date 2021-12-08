@@ -21,23 +21,23 @@ let rec generation_code_expression e =
     let code_liste = List.fold_left (fun a b -> a ^ generation_code_expression b) "" listExp in
     begin
     match info_ast_to_info ia with
-    | InfoFun(nom,_,_) -> code_liste ^ "CALL (ST) " ^ nom ^ "\n"
+    | InfoFun(nom,_,_) -> code_liste ^ "CALL (SB) " ^ nom ^ "\n"
     | _ -> failwith "Pas possible"
     end
   (* Accès à un identifiant représenté par son nom *)
   | AstType.Ident(ia) ->
     let adr = getAdresse ia in
     let t = Tds.getTaille ia in
-      "LOAD " ^ string_of_int t ^ " " ^ adr ^ "\n" 
+      "LOAD (" ^ string_of_int t ^ ") " ^ adr ^ "\n" 
   (* Booléen *)
   | AstType.Booleen(bool) ->
     if (bool) then 
-      "LOAD 1\n"
+      "LOADL 1\n"
     else
-      "LOAD 0\n"
+      "LOADL 0\n"
   (* Entier *)
   | AstType.Entier(int) ->
-    "LOAD " ^ string_of_int int ^ "\n"
+    "LOADL " ^ string_of_int int ^ "\n"
   (* Opération unaire représentée par l'opérateur et l'opérande *)
   | AstType.Unaire(un, expr) ->
     let code_de_e = generation_code_expression expr in
@@ -55,9 +55,9 @@ let rec generation_code_expression e =
       match bin with
       | Fraction -> code
       | PlusInt -> code ^ "SUBR IAdd\n"
-      | PlusRat -> code ^ "CALL (ST) RAdd\n"
+      | PlusRat -> code ^ "CALL (SB) RAdd\n"
       | MultInt -> code ^ "SUBR IMul\n"
-      | MultRat -> code ^ "CALL (ST) RMul\n"
+      | MultRat -> code ^ "CALL (SB) RMul\n"
       | EquInt -> code ^ "SUBR IEq\n"
       | EquBool -> code ^ "SUBR IEq\n"
       | Inf -> code ^ "SUBR ILss\n"
@@ -73,22 +73,23 @@ let rec generation_code_instruction ia i =
   match i with
   | AstType.Declaration(ia, e) ->
     let t = Tds.getTaille ia in
+    let adr = Tds.getAdresse ia in
     let code_e = generation_code_expression e in
-      "PUSH " ^ string_of_int t ^ "\n" ^ code_e ^ "STORE " ^ string_of_int t ^ "\n"
+      "PUSH " ^ string_of_int t ^ "\n" ^ code_e ^ "STORE (" ^ string_of_int t ^ ") " ^ adr ^ "\n"
   | AstType.Affectation(ia, e) ->
     let t = Tds.getTaille ia in
     let adr = Tds.getAdresse ia in
     let code_e = generation_code_expression e in
-      code_e ^ "STORE " ^ string_of_int t ^ " " ^ adr ^ "\n" 
+      code_e ^ "STORE (" ^ string_of_int t ^ ") " ^ adr ^ "\n" 
   | AstType.AffichageInt(e) ->
     let code_e = generation_code_expression e in
-      code_e ^ "SUBR IOut"
+      code_e ^ "SUBR IOut\n" 
   | AstType.AffichageRat(e) ->
     let code_e = generation_code_expression e in
-      code_e ^ "CALL (ST) ROut"
+      code_e ^ "CALL (SB) ROut\n"
   | AstType.AffichageBool(e) ->
     let code_e = generation_code_expression e in
-      code_e ^ "SUBR BOut"
+      code_e ^ "SUBR BOut\n"
   | AstType.Conditionnelle(c,t,e) ->
     let code_c = generation_code_expression c in
     let code_t = generation_code_bloc ia t in
@@ -115,7 +116,7 @@ let rec generation_code_instruction ia i =
       | Some iaf ->
         let t = Tds.getTaille iaf in 
         let tlp = Tds.getTaillePara iaf in
-          code_e ^ "RETURN " ^ string_of_int t ^ " " ^ string_of_int tlp ^ "\n" 
+          code_e ^ "RETURN (" ^ string_of_int t ^ ") " ^ string_of_int tlp ^ "\n" 
       end
   | Empty -> ""
 
@@ -126,12 +127,19 @@ let rec generation_code_instruction ia i =
 and generation_code_bloc ia li =
   let isDeclaration b =
     match b with 
-    | AstType.Declaration(_,_) ->
-      1
+    | AstType.Declaration(ia,_) ->
+      let t = getType ia in
+      begin
+      match t with 
+      | Rat ->
+        2
+      | _ -> 
+        1
+      end
     | _ -> 
       0
     in
-    let (code_b,nbvarlocale) = List.fold_right (fun b (code,nbvar) -> (code ^ (generation_code_instruction ia b),nbvar + isDeclaration b)) li ("",0) in
+    let (code_b,nbvarlocale) = List.fold_left (fun (code,nbvar) b -> (code ^ (generation_code_instruction ia b),nbvar + isDeclaration b)) ("",0) li in
       code_b ^ "POP (0) " ^ string_of_int nbvarlocale ^ "\n"
 
 
@@ -143,7 +151,7 @@ let generation_code_fonction (AstPlacement.Fonction(ia,lp,li))  =
   let code_li = List.fold_left (fun a b -> a ^ generation_code_instruction (Some ia) b) "" li in
   match info_ast_to_info ia with
     | InfoFun(nom,_,_) -> 
-      nom ^ "\n" ^ code_li
+      nom ^ "\n" ^ code_li ^ "\nHALT\n\n"
     | _ -> failwith "Pas possible"
   
 
@@ -153,9 +161,7 @@ let generation_code_fonction (AstPlacement.Fonction(ia,lp,li))  =
 let analyser (AstPlacement.Programme (fonctions,prog)) =
   let code_f = List.fold_left (fun a b -> a ^ generation_code_fonction b) "" fonctions in
   let code_b = generation_code_bloc None prog in 
-    "JUMP MAIN" ^ code_f ^ "MAIN\n" ^ code_b ^ "HALT"
-
-
-
+  let entete = Code.getEntete() in
+    entete ^ code_f ^ "main\n" ^ code_b ^ "\nHALT"
 
 end

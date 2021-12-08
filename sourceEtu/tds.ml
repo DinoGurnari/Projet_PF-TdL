@@ -67,8 +67,11 @@ let getTaille ia =
 let getAdresse ia =
   let info = info_ast_to_info ia in
   match info with
-  | InfoVar(_,_,_,a) -> a
+  | InfoVar(_,_,d,r) -> string_of_int d ^ "[" ^ r ^ "]"
   | _ -> failwith "Pas possible"
+
+
+
 
 let getTaillePara ia = 
   let info = info_ast_to_info ia in
