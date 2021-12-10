@@ -21,8 +21,8 @@ let rec analyse_type_expression e =
   (* Appel de fonction représenté par le nom de la fonction et la liste des paramètres réels *)
   | AstTds.AppelFonction(ia, listExp) -> 
     let listExpN = List.map analyse_type_expression listExp in
-    let listExpSansTypes = List.map (fun (x,y) -> x) listExpN in
-    let listTypesExp = List.map (fun (x,y) -> y) listExpN in
+    let listExpSansTypes = List.map (fun (x,_) -> x) listExpN in
+    let listTypesExp = List.map (fun (_,y) -> y) listExpN in
     let info = info_ast_to_info ia in
       begin
       match info with
@@ -183,7 +183,7 @@ let analyse_type_fonction (AstTds.Fonction(t,ia,lp,li))  =
     ia
   in
   let nlp = List.map analyser_type_para lp in
-  let listeTypes = List.map (fun (x, y) -> x) lp in
+  let listeTypes = List.map (fun (x, _) -> x) lp in
     modifier_type_fonction_info t listeTypes ia;
     let nli = analyse_type_bloc (Some t) li in
       AstType.Fonction(ia, nlp, nli)

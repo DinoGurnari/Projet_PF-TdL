@@ -3,10 +3,8 @@ module PasseCodeRatToTam : Passe.Passe with type t1 = Ast.AstPlacement.programme
 struct
 
   open Tds
-  open Exceptions
   open Ast
   open Type
-  open AstPlacement
 
   type t1 = Ast.AstPlacement.programme
   type t2 = string
@@ -28,16 +26,16 @@ let rec generation_code_expression e =
   | AstType.Ident(ia) ->
     let adr = getAdresse ia in
     let t = Tds.getTaille ia in
-      "LOAD (" ^ string_of_int t ^ ") " ^ adr  
+      "LOAD (" ^ string_of_int t ^ ") " ^ adr ^ "\n" 
   (* Booléen *)
   | AstType.Booleen(bool) ->
     if (bool) then 
-      "LOADL 1"
+      "LOADL 1\n"
     else
-      "LOADL 0"
+      "LOADL 0\n"
   (* Entier *)
   | AstType.Entier(int) ->
-    "LOADL " ^ string_of_int int
+    "LOADL " ^ string_of_int int ^ "\n"
   (* Opération unaire représentée par l'opérateur et l'opérande *)
   | AstType.Unaire(un, expr) ->
     let code_de_e = generation_code_expression expr in
@@ -63,7 +61,7 @@ let rec generation_code_expression e =
       | Inf -> code ^ "SUBR ILss\n"
       end
 
-  |_ -> failwith "impossible"
+ 
 
 (* generation_code_instruction : AstPlacement.instruction -> String *)
 (* Paramètre i : l'instruction à analyser *)
@@ -147,7 +145,7 @@ and generation_code_bloc ia li =
 
 (* Paramètre : la fonction à analyser *)
 (* Génère le code et renvoie un String *)
-let generation_code_fonction (AstPlacement.Fonction(ia,lp,li))  = 
+let generation_code_fonction (AstPlacement.Fonction(ia,_,li))  = 
   let code_li = List.fold_left (fun a b -> a ^ generation_code_instruction (Some ia) b) "" li in
   match info_ast_to_info ia with
     | InfoFun(nom,_,_) -> 
