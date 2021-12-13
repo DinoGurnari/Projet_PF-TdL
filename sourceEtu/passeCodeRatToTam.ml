@@ -146,7 +146,7 @@ and generation_code_bloc ia li =
 (* Paramètre : la fonction à analyser *)
 (* Génère le code et renvoie un String *)
 let generation_code_fonction (AstPlacement.Fonction(ia,_,li))  = 
-  let code_li = List.fold_left (fun a b -> a ^ generation_code_instruction (Some ia) b) "" li in
+  let code_li = generation_code_bloc (Some ia) li in
   match info_ast_to_info ia with
     | InfoFun(nom,_,_) -> 
       nom ^ "\n" ^ code_li ^ "\nHALT\n\n"

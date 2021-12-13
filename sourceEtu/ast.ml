@@ -172,7 +172,7 @@ type expression = AstType.expression
 
 (* instructions existantes dans notre langage *)
 (* = instructions de AstType  *)
-type bloc = instruction list
+type bloc = AstType.bloc
  and instruction = AstType.instruction
 
 (* informations associées à l'identificateur (dont son nom), liste de paramètres, corps, expression de retour *)
