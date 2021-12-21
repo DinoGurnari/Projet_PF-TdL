@@ -11,6 +11,35 @@ struct
   type t2 = Ast.AstTds.programme
 
 
+let rec analyse_tds_affectation a modife tds =
+
+  match a with 
+  | AstSyntax.Ident(id) ->
+    begin
+    match Tds.chercherGlobalement tds id with
+    | None -> raise (IdentifiantNonDeclare id)
+    | Some ia -> 
+      begin
+      match info_ast_to_info ia with 
+      | InfoFun _ -> 
+        raise (MauvaiseUtilisationIdentifiant id)
+      | InfoConst(id,value) -> 
+        begin
+        if modife then
+          raise (MauvaiseUtilisationIdentifiant id)
+        else
+          failwith "erreur cerveau"
+        end
+      | InfoVar _ -> 
+        AstTds.Ident(ia)
+      end
+    end
+  | AstSyntax.Deref aff -> 
+    let na =analyse_tds_affectation aff modife tds in
+    AstTds.Deref(na)
+
+
+
 (* analyse_tds_expression : AstSyntax.expression -> AstTds.expression *)
 (* Paramètre tds : la table des symboles courante *)
 (* Paramètre e : l'expression à analyser *)
@@ -32,19 +61,7 @@ let rec analyse_tds_expression tds e =
       | _ -> raise (MauvaiseUtilisationIdentifiant id)
     end
   (* Accès à un identifiant représenté par son nom *)
-  | AstSyntax.Ident(id) ->
-    begin
-    match Tds.chercherGlobalement tds id with
-    | None -> raise (IdentifiantNonDeclare id)
-    | Some ia -> 
-      begin
-      match info_ast_to_info ia with 
-      | InfoFun _ -> raise (MauvaiseUtilisationIdentifiant id)
-      | InfoConst(_,v) ->
-        AstTds.Entier(v)
-      | InfoVar _ -> AstTds.Ident(ia)
-      end
-    end
+  
   (* Booléen *)
   | AstSyntax.Booleen(bool) ->
     AstTds.Booleen(bool)
@@ -57,6 +74,24 @@ let rec analyse_tds_expression tds e =
   (* Opération binaire représentée par l'opérateur, l'opérande gauche et l'opérande droite *)
   | AstSyntax.Binaire(bin, expression1, expression2) ->
     AstTds.Binaire(bin, analyse_tds_expression tds expression1, analyse_tds_expression tds expression2)
+  | AstSyntax.Affectation(aff) ->
+    let na = analyse_tds_affectation aff false tds in
+    AstTds.Affectation(na)
+  | AstSyntax.Null ->
+    AstTds.Null
+  | AstSyntax.New(t) ->
+    AstTds.New(t)
+  | AstSyntax.Adr(id) ->
+    match Tds.chercherGlobalement tds id with
+    | None -> raise (IdentifiantNonDeclare id)
+    | Some ia -> 
+      begin 
+      match info_ast_to_info ia with
+      | InfoVar _ -> AstTds.Adr(ia)
+      | _ -> raise (MauvaiseUtilisationIdentifiant id) 
+      end 
+  
+
 
 
 (* analyse_tds_instruction : AstSyntax.instruction -> tds -> AstTds.instruction *)
@@ -90,29 +125,10 @@ let rec analyse_tds_instruction tds i =
             il a donc déjà été déclaré dans le bloc courant *) 
             raise (DoubleDeclaration n)
       end
-  | AstSyntax.Affectation (n,e) ->
-      begin
-        match chercherGlobalement tds n with
-        | None -> 
-          (* L'identifiant n'est pas trouvé dans la tds globale. *) 
-          raise (IdentifiantNonDeclare n)
-        | Some info -> 
-          (* L'identifiant est trouvé dans la tds globale, 
-          il a donc déjà été déclaré. L'information associée est récupérée. *) 
-          begin
-            match info_ast_to_info info with
-            | InfoVar _ -> 
-              (* Vérification de la bonne utilisation des identifiants dans l'expression *)
-              (* et obtention de l'expression transformée *) 
-              let ne = analyse_tds_expression tds e in
-              (* Renvoie de la nouvelle affectation où le nom a été remplacé par l'information 
-              et l'expression remplacée par l'expression issue de l'analyse *)
-               Affectation (info, ne)
-            |  _ ->
-              (* Modification d'une constante ou d'une fonction *)  
-              raise (MauvaiseUtilisationIdentifiant n) 
-          end
-      end
+  | AstSyntax.Affectable (aff,e) ->
+    let na = analyse_tds_affectation aff true tds in
+    let ne = analyse_tds_expression tds e in
+    AstTds.Affectation (na,ne)
   | AstSyntax.Constante (n,v) -> 
       begin
         match chercherLocalement tds n with

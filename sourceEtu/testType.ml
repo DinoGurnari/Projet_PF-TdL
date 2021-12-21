@@ -1,4 +1,4 @@
-open Compilateur
+(* open Compilateur
 open Exceptions
 
 exception ErreurNonDetectee
@@ -560,3 +560,4 @@ let%test_unit "code_testfuns" =
 let _ = compiler   "../../fichiersRat/src-rat-tam-test/testfuns.rat" in ()
 
 
+ *)
