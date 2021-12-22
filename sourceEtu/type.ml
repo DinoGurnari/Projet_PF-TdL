@@ -1,18 +1,22 @@
-type typ = Bool | Int | Rat | Undefined | Adr of typ
-
-let string_of_type t = 
+type typ = Bool | Int | Rat | Undefined | Adr of typ | Null
+let rec string_of_type t = 
   match t with
   | Bool ->  "Bool"
   | Int  ->  "Int"
   | Rat  ->  "Rat"
   | Undefined -> "Undefined"
+  | Adr(typ) -> "Adress of " ^ string_of_type typ
+  | Null -> "Null"
 
 
-let est_compatible t1 t2 =
+let rec est_compatible t1 t2 =
   match t1, t2 with
   | Bool, Bool -> true
   | Int, Int -> true
   | Rat, Rat -> true 
+  | _, Null -> true
+  | Null, _ -> true
+  | Adr(typ1), Adr(typ2) -> est_compatible typ1 typ2 
   | _ -> false 
 
 let%test _ = est_compatible Bool Bool

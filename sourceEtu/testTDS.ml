@@ -358,3 +358,13 @@ let%test_unit "code_complique" =
   let _ = compiler   "../../fichiersRat/src-rat-tam-test/complique.rat" in ()
 
 
+(* let%test_unit "test_valide" = 
+  let _ = compiler   "../../fichiersRat/src-rat-tam-test/NOMFICHIER.rat" in ()
+
+let%test_unit "test_erreur"= 
+  try 
+    let _ = compiler "../../fichiersRat/src-rat-tds-test/NOMFICHIER.rat" 
+    in raise ErreurNonDetectee
+  with
+  | ERREURRAISE() -> ()
+ *)

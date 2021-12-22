@@ -1,4 +1,4 @@
-(* Module de génération du code *)
+ (* Module de génération du code *)
 module PasseCodeRatToTam : Passe.Passe with type t1 = Ast.AstPlacement.programme and type t2 = string =
 struct
 
@@ -9,6 +9,21 @@ struct
   type t1 = Ast.AstPlacement.programme
   type t2 = string
 
+let rec generation_code_affectation aff modifie ref =
+  match aff with 
+  | AstType.Ident(ia) ->
+    let t = getType ia in
+    let adr = getAdresse ia in 
+      "LOAD (" ^ string_of_type t ^ ") " ^ adr ^ "\n"
+  |AstType.Deref(a) ->
+    let code_a = generation_code_affectation a modifie ref in 
+      match modifie, ref with
+        | true,true ->
+          code_a ^ "STOREI (1)\n"
+        | true,false ->
+        code_a ^ "LOADI (1)\n"
+        | false,true ->
+        | false,false ->
 (* generation_code_expression : AstPlacement.expression -> String *)
 (* Paramètre e : l'expression à analyser *)
 (* Génère le code et renvoie un String *)
@@ -22,11 +37,9 @@ let rec generation_code_expression e =
     | InfoFun(nom,_,_) -> code_liste ^ "CALL (SB) " ^ nom ^ "\n"
     | _ -> failwith "Pas possible"
     end
-  (* Accès à un identifiant représenté par son nom *)
-  | AstType.Ident(ia) ->
-    let adr = getAdresse ia in
-    let t = Tds.getTaille ia in
-      "LOAD (" ^ string_of_int t ^ ") " ^ adr ^ "\n" 
+  (*Appel à une valeur *)
+  | AstType.Affectation(aff) ->
+    generation_code_affectation aff false
   (* Booléen *)
   | AstType.Booleen(bool) ->
     if (bool) then 
@@ -60,6 +73,14 @@ let rec generation_code_expression e =
       | EquBool -> code ^ "SUBR IEq\n"
       | Inf -> code ^ "SUBR ILss\n"
       end
+  | AstType.Null ->
+  "ouais"
+  | AstType.New(typ) ->
+  let t = getTaille typ in 
+    "LOADl " ^ (string_of_int t) ^ "\nSUBR Malloc\n"
+  | AstType.Adr(ia) ->
+    let adr = getAdresse ia in
+      "LOADA" ^ adr
 
  
 
@@ -74,11 +95,10 @@ let rec generation_code_instruction ia i =
     let adr = Tds.getAdresse ia in
     let code_e = generation_code_expression e in
       "PUSH " ^ string_of_int t ^ "\n" ^ code_e ^ "STORE (" ^ string_of_int t ^ ") " ^ adr ^ "\n"
-  | AstType.Affectation(ia, e) ->
-    let t = Tds.getTaille ia in
-    let adr = Tds.getAdresse ia in
+  | AstType.Affectation(aff, e) ->
+    let code_a = generation_code_affectation aff true in
     let code_e = generation_code_expression e in
-      code_e ^ "STORE (" ^ string_of_int t ^ ") " ^ adr ^ "\n" 
+      code_e ^  code_a
   | AstType.AffichageInt(e) ->
     let code_e = generation_code_expression e in
       code_e ^ "SUBR IOut\n" 
@@ -162,4 +182,4 @@ let analyser (AstPlacement.Programme (fonctions,prog)) =
   let entete = Code.getEntete() in
     entete ^ code_f ^ "main\n" ^ code_b ^ "\nHALT"
 
-end
+end 

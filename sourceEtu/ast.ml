@@ -143,11 +143,18 @@ type binaire = Fraction | PlusInt | PlusRat | MultInt | MultRat | EquInt | EquBo
 (* = expression de AstTds *)
 type expression =
   | AppelFonction of Tds.info_ast * expression list
-  | Ident of Tds.info_ast
+  | Affectation of affectable
   | Booleen of bool
   | Entier of int
   | Unaire of AstSyntax.unaire * expression
   | Binaire of binaire * expression * expression
+  | Null
+  | New of typ
+  | Adr of Tds.info_ast
+
+and affectable =
+  | Deref of affectable
+  | Ident of Tds.info_ast
 
 (* instructions existantes Rat *)
 (* = instruction de AstTds + informations associées aux identificateurs, mises à jour *)
@@ -155,7 +162,7 @@ type expression =
 type bloc = instruction list
  and instruction =
   | Declaration of Tds.info_ast * expression
-  | Affectation of Tds.info_ast * expression
+  | Affectation of affectable * expression
   | AffichageInt of expression
   | AffichageRat of expression
   | AffichageBool of expression
@@ -191,7 +198,7 @@ struct
 (* Expressions existantes dans notre langage *)
 (* = expression de AstType  *)
 type expression = AstType.expression
-
+and affectable = AstType.affectable
 (* instructions existantes dans notre langage *)
 (* = instructions de AstType  *)
 type bloc = AstType.bloc

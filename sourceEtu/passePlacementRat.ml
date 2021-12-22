@@ -81,4 +81,4 @@ let analyser (AstType.Programme (fonctions,prog)) =
   let nb = analyse_placement_bloc "SB" 0 prog in
   Programme (nf,nb)  
 
-end
+end 

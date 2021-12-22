@@ -1,4 +1,4 @@
-(* (* Module de la passe de gestion des types *)
+ (* Module de la passe de gestion des types *)
 module PasseTypeRat : Passe.Passe with type t1 = Ast.AstTds.programme and type t2 = Ast.AstType.programme =
 struct
 
@@ -10,6 +10,23 @@ struct
 
   type t1 = Ast.AstTds.programme
   type t2 = Ast.AstType.programme
+
+
+let rec analyse_type_affectation a = 
+  match a with 
+  | AstTds.Ident(ia) ->
+    (AstType.Ident(ia), getType ia)
+  | AstTds.Deref aff ->
+    let (na,typ) = analyse_type_affectation aff in
+      begin
+      match typ with
+      | Adr(t) ->
+        (na,t)
+      | _ ->
+        raise (TypeNonDeferencable(typ))
+      end 
+    
+
 
 (* analyse_type_expression : AstTds.expression -> (AstType.expression * typ) *)
 (* Paramètre e : l'expression à analyser *)
@@ -34,9 +51,6 @@ let rec analyse_type_expression e =
           raise (TypesParametresInattendus (listTypesExp, listTypesPara))
       | _ -> failwith "Erreur interne : Pas possible"
       end
-  (* Accès à un identifiant représenté par son nom *)
-  | AstTds.Ident(ia) ->
-    (AstType.Ident(ia), getType ia)
   (* Booléen *)
   | AstTds.Booleen(bool) ->
     (AstType.Booleen(bool), Bool)
@@ -55,50 +69,63 @@ let rec analyse_type_expression e =
   | AstTds.Binaire(bin, expression1, expression2) ->
     let (ne1, te1) = analyse_type_expression expression1 in
     let (ne2, te2) = analyse_type_expression expression2 in
-      if (te1 != te2) then 
-        raise (TypeBinaireInattendu (bin, te1, te2))
-      else
+        begin
         match bin with
         | Fraction -> 
-          if (te1 = Int) then
+          if (te1 = Int && te2 = Int) then
             (AstType.Binaire(Fraction, ne1, ne2), Rat)
           else 
             raise (TypeBinaireInattendu(bin, te1, te2))
         | Plus -> 
           begin
-          match te1 with
-          | Int ->
+          match te1,te2 with
+          | Int,Int ->
             (AstType.Binaire(PlusInt, ne1, ne2), Int)
-          | Rat ->
+          | Rat,Rat ->
             (AstType.Binaire(PlusRat, ne1, ne2), Rat)
           | _ ->
             raise (TypeBinaireInattendu(bin, te1, te2))
           end
         | Mult ->
           begin
-          match te1 with
-          | Int ->
+          match te1,te2 with
+          | Int,Int ->
             (AstType.Binaire(MultInt, ne1, ne2), Int)
-          | Rat ->
+          | Rat,Rat ->
             (AstType.Binaire(MultRat, ne1, ne2), Rat)
           | _ ->
             raise (TypeBinaireInattendu(bin, te1, te2))
           end
         | Equ ->
           begin
-          match te1 with
-          | Int ->
+          match te1,te2 with
+          
+          | Int,Int ->
             (AstType.Binaire(EquInt, ne1, ne2), Bool)
-          | Bool ->
+          | Bool,Bool ->
             (AstType.Binaire(EquBool, ne1, ne2), Bool)
           | _ ->
             raise (TypeBinaireInattendu(bin, te1, te2))
           end
         | Inf ->
-          if (te1 = Int) then
+          if (te1 = Int && te2 = Int) then
             (AstType.Binaire(Inf, ne1, ne2), Bool)
           else 
             raise (TypeBinaireInattendu(bin, te1, te2))
+        end
+  | AstTds.Affectation(aff) ->
+    let (na,typ) = analyse_type_affectation aff in
+      (AstType.Affectation(na),typ)
+  | AstTds.Null ->
+    (AstType.Null, Type.Null)
+
+  | AstTds.New(typ) ->
+    (AstType.New(typ) , typ)
+
+  | AstTds.Adr(ia) ->
+    (AstType.Adr(ia), Adr(getType ia))
+
+        
 
 (* analyse_type_instruction : AstTds.instruction -> AstType.instruction *)
 (* Paramètre i : l'instruction à analyser *)
@@ -111,18 +138,18 @@ let rec analyse_type_instruction tf i =
   | AstTds.Declaration (t, ia, e) ->
     modifier_type_info t ia;
     let (ne, te) = analyse_type_expression e in
-      if t = te then 
+      if est_compatible t te then 
         AstType.Declaration(ia, ne)
       else
         raise (TypeInattendu (te, t))
 
-  | AstTds.Affectation (ia, e) ->
-    let t = getType ia in
+  | AstTds.Affectation (aff, e) ->
+    let (na, ta) = analyse_type_affectation aff in
     let (ne, te) = analyse_type_expression e in
-      if t = te then 
-        AstType.Affectation(ia, ne)
+      if est_compatible ta te then 
+        AstType.Affectation(na, ne)
       else
-        raise (TypeInattendu (te, t))
+        raise (TypeInattendu (te, ta))
 
   | AstTds.Affichage e -> 
     let (ne, te) = analyse_type_expression e in
@@ -155,7 +182,7 @@ let rec analyse_type_instruction tf i =
       match tf with
       | None -> raise (RetourDansMain)
       | Some t ->  
-        if t = te then
+        if est_compatible t te then
           Retour(ne)
         else
           raise (TypeInattendu(te, t))
@@ -199,4 +226,4 @@ let analyser (AstTds.Programme (fonctions,prog)) =
   let nb = analyse_type_bloc None prog in
   Programme (nf,nb)  
 
-end *)
+end

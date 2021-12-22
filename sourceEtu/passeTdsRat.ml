@@ -28,7 +28,7 @@ let rec analyse_tds_affectation a modife tds =
         if modife then
           raise (MauvaiseUtilisationIdentifiant id)
         else
-          failwith "erreur cerveau"
+          AstTds.Ident(ia)
         end
       | InfoVar _ -> 
         AstTds.Ident(ia)
@@ -54,11 +54,13 @@ let rec analyse_tds_expression tds e =
     match Tds.chercherGlobalement tds id with
     | None -> raise (IdentifiantNonDeclare id)
     | Some ia -> 
+      begin
       match (info_ast_to_info ia) with 
       | InfoFun _ ->
         let liste = List.map(analyse_tds_expression tds) listExp in
-        AstTds.AppelFonction(ia, liste)
+          AstTds.AppelFonction(ia, liste)
       | _ -> raise (MauvaiseUtilisationIdentifiant id)
+      end
     end
   (* Accès à un identifiant représenté par son nom *)
   
@@ -76,7 +78,7 @@ let rec analyse_tds_expression tds e =
     AstTds.Binaire(bin, analyse_tds_expression tds expression1, analyse_tds_expression tds expression2)
   | AstSyntax.Affectation(aff) ->
     let na = analyse_tds_affectation aff false tds in
-    AstTds.Affectation(na)
+      AstTds.Affectation(na)
   | AstSyntax.Null ->
     AstTds.Null
   | AstSyntax.New(t) ->
