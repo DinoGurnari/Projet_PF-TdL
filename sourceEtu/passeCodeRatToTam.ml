@@ -9,21 +9,37 @@ struct
   type t1 = Ast.AstPlacement.programme
   type t2 = string
 
-let rec generation_code_affectation aff modifie ref =
+(* generation_code_expression : AstPlacement.affectation -> String *)
+(* Paramètre aff : l'affectation à analyser *)
+(* Paramètre modifie : booléen pour savoir si on modifie ou pas la variable *)
+(* Génère le code et renvoie un String *)
+
+let rec generation_code_affectation aff modifie =
   match aff with 
   | AstType.Ident(ia) ->
     let t = getType ia in
     let adr = getAdresse ia in 
-      "LOAD (" ^ string_of_type t ^ ") " ^ adr ^ "\n"
+    begin
+    match t with
+    | Adr(_) ->
+      let code_a = "LOADA " ^ adr in
+      if modifie then
+        code_a ^ "\nSTOREI (1)\n"
+      else
+        code_a ^ "\nLOADI (1)\n"
+    | _ ->
+      if modifie then
+        "LOAD (" ^ string_of_type t ^ ") " ^ adr ^ "\n"
+      else
+        "STORE (" ^ string_of_type t ^ ") " ^ adr ^ "\n"
+    end
   |AstType.Deref(a) ->
-    let code_a = generation_code_affectation a modifie ref in 
-      match modifie, ref with
-        | true,true ->
-          code_a ^ "STOREI (1)\n"
-        | true,false ->
-        code_a ^ "LOADI (1)\n"
-        | false,true ->
-        | false,false ->
+    let code_a = generation_code_affectation a modifie in
+    if modifie then
+      code_a ^ "STOREI (1)\n"
+    else
+      code_a ^ "LOADI (1)\n"
+        
 (* generation_code_expression : AstPlacement.expression -> String *)
 (* Paramètre e : l'expression à analyser *)
 (* Génère le code et renvoie un String *)
@@ -74,10 +90,9 @@ let rec generation_code_expression e =
       | Inf -> code ^ "SUBR ILss\n"
       end
   | AstType.Null ->
-  "ouais"
-  | AstType.New(typ) ->
-  let t = getTaille typ in 
-    "LOADl " ^ (string_of_int t) ^ "\nSUBR Malloc\n"
+    "LOADl 1\nSUBR Malloc\n"
+  | AstType.New ->
+    "LOADl 1\nSUBR Malloc\n"
   | AstType.Adr(ia) ->
     let adr = getAdresse ia in
       "LOADA" ^ adr

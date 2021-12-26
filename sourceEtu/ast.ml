@@ -149,7 +149,7 @@ type expression =
   | Unaire of AstSyntax.unaire * expression
   | Binaire of binaire * expression * expression
   | Null
-  | New of typ
+  | New
   | Adr of Tds.info_ast
 
 and affectable =
