@@ -68,8 +68,7 @@ let getAdresse ia =
   let info = info_ast_to_info ia in
   match info with
   | InfoVar(_,_,d,r) -> string_of_int d ^ "[" ^ r ^ "]"
-  | _ -> failwith "Pas possible"
-
+  | InfoConst(t,_) -> failwith ("Pas possible(const)" ^ t)
 
 
 

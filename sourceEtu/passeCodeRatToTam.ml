@@ -18,20 +18,28 @@ let rec generation_code_affectation aff modifie =
   match aff with 
   | AstType.Ident(ia) ->
     let t = getType ia in
-    let adr = getAdresse ia in 
     begin
-    match t with
-    | Adr(_) ->
-      let code_a = "LOADA " ^ adr in
-      if modifie then
-        code_a ^ "\nSTOREI (1)\n"
-      else
-        code_a ^ "\nLOADI (1)\n"
-    | _ ->
-      if modifie then
-        "LOAD (" ^ string_of_type t ^ ") " ^ adr ^ "\n"
-      else
-        "STORE (" ^ string_of_type t ^ ") " ^ adr ^ "\n"
+    match info_ast_to_info ia with
+    | InfoConst (_, value ) ->
+      "LOADL " ^ string_of_int value ^ "\n"
+    | InfoVar(_)->
+      let adr = getAdresse ia in 
+      begin
+      match t with
+      | Adr(_) ->
+        let code_a = "LOADA " ^ adr in
+        if modifie then
+          code_a ^ "\nSTOREI (1)\n"
+        else
+          code_a ^ "\nLOADI (1)\n"
+      | _ ->
+        let t = Tds.getTaille ia in
+        if modifie then
+          "STORE (" ^ string_of_int t ^ ") " ^ adr ^ "\n" 
+        else
+          "LOAD (" ^ string_of_int t ^ ") " ^ adr ^ "\n" 
+      end
+    | InfoFun _ -> failwith "pas possible"
     end
   |AstType.Deref(a) ->
     let code_a = generation_code_affectation a modifie in
@@ -51,7 +59,7 @@ let rec generation_code_expression e =
     begin
     match info_ast_to_info ia with
     | InfoFun(nom,_,_) -> code_liste ^ "CALL (SB) " ^ nom ^ "\n"
-    | _ -> failwith "Pas possible"
+    | _ -> failwith "Pas possi"
     end
   (*Appel à une valeur *)
   | AstType.Affectation(aff) ->
@@ -90,12 +98,12 @@ let rec generation_code_expression e =
       | Inf -> code ^ "SUBR ILss\n"
       end
   | AstType.Null ->
-    "LOADl 1\nSUBR Malloc\n"
+    "LOADL 1\nSUBR Malloc\n"
   | AstType.New ->
-    "LOADl 1\nSUBR Malloc\n"
+    "LOADL 1\nSUBR Malloc\n"
   | AstType.Adr(ia) ->
     let adr = getAdresse ia in
-      "LOADA" ^ adr
+      "LOADA " ^ adr ^ "\n"
 
  
 
@@ -185,7 +193,8 @@ let generation_code_fonction (AstPlacement.Fonction(ia,_,li))  =
   match info_ast_to_info ia with
     | InfoFun(nom,_,_) -> 
       nom ^ "\n" ^ code_li ^ "\nHALT\n\n"
-    | _ -> failwith "Pas possible"
+    | InfoConst(_) -> failwith "Pas possible(const)"
+    | InfoVar(_) -> failwith "pas possible(var)"
   
 
 (* analyser : AstPlacement.ast -> String *)

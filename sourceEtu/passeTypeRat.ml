@@ -120,7 +120,7 @@ let rec analyse_type_expression e =
     (AstType.Null, Type.Null)
 
   | AstTds.New(typ) ->
-    (AstType.New , typ)
+    (AstType.New , Adr(typ))
 
   | AstTds.Adr(ia) ->
     (AstType.Adr(ia), Adr(getType ia))

@@ -23,7 +23,7 @@ let rec analyse_tds_affectation a modife tds =
       match info_ast_to_info ia with 
       | InfoFun _ -> 
         raise (MauvaiseUtilisationIdentifiant id)
-      | InfoConst(id,value) -> 
+      | InfoConst(id,_) -> 
         begin
         if modife then
           raise (MauvaiseUtilisationIdentifiant id)

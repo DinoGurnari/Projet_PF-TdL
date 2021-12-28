@@ -560,3 +560,5 @@ let%test_unit "code_testfuns" =
 let _ = compiler   "../../fichiersRat/src-rat-tam-test/testfuns.rat" in ()
 
 
+let%test_unit "code_pointeur1" = 
+  let _ = compiler   "../../fichiersRat/src-rat-pointeur-test/testpointeur1.rat" in ()

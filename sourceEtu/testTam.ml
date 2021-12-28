@@ -1,4 +1,4 @@
-(* 
+
 open Compilateur
 
 (* Changer le chemin d'accès du jar. *)
@@ -110,5 +110,10 @@ let%expect_test "factrec" =
   runtam "../../fichiersRat/src-rat-tam-test/factrec.rat";
   [%expect{| 120 |}]
 
+let%expect_test "pointeur1" =
+  runtam "../../fichiersRat/src-rat-pointeur-test/testpointeur1.rat";
+  [%expect{| 3 |}]
 
- *)
+let%expect_test "pointeur2" =
+  runtam "../../fichiersRat/src-rat-pointeur-test/testpointeur2.rat";
+  [%expect{| 4 |}]

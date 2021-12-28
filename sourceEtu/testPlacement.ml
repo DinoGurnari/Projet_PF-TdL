@@ -221,3 +221,5 @@ let%test "test12_f_r" =
 let%test "test12_f_i" = 
   test "../../fichiersRat/src-rat-placement-test/test12.rat"  "f" ("i",1)  (-1, "LB")
   
+let%test_unit "code_pointeur1" = 
+  let _ = compiler   "../../fichiersRat/src-rat-pointeur-test/testpointeur1.rat" in ()

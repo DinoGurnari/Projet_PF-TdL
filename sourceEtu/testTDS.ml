@@ -358,6 +358,9 @@ let%test_unit "code_complique" =
   let _ = compiler   "../../fichiersRat/src-rat-tam-test/complique.rat" in ()
 
 
+let%test_unit "code_pointeur1" = 
+  let _ = compiler   "../../fichiersRat/src-rat-pointeur-test/testpointeur1.rat" in ()
+
 (* let%test_unit "test_valide" = 
   let _ = compiler   "../../fichiersRat/src-rat-tam-test/NOMFICHIER.rat" in ()
 
