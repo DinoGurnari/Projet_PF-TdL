@@ -27,11 +27,11 @@ let rec generation_code_affectation aff modifie =
       begin
       match t with
       | Adr(_) ->
-        let code_a = "LOADA " ^ adr in
+        
         if modifie then
-          code_a ^ "\nSTOREI (1)\n"
+          "STORE (1) " ^ adr  ^ "\n"
         else
-          code_a ^ "\nLOADI (1)\n"
+          "LOAD (1) " ^ adr  ^ "\n"
       | _ ->
         let t = Tds.getTaille ia in
         if modifie then
@@ -42,7 +42,7 @@ let rec generation_code_affectation aff modifie =
     | InfoFun _ -> failwith "pas possible"
     end
   |AstType.Deref(a) ->
-    let code_a = generation_code_affectation a modifie in
+    let code_a = generation_code_affectation a false in
     if modifie then
       code_a ^ "STOREI (1)\n"
     else
@@ -98,9 +98,9 @@ let rec generation_code_expression e =
       | Inf -> code ^ "SUBR ILss\n"
       end
   | AstType.Null ->
-    "LOADL 1\nSUBR Malloc\n"
+    "SUBR MVoid\n"
   | AstType.New ->
-    "LOADL 1\nSUBR Malloc\n"
+    "LOADL 1\nSUBR MAlloc\n"
   | AstType.Adr(ia) ->
     let adr = getAdresse ia in
       "LOADA " ^ adr ^ "\n"

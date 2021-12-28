@@ -21,7 +21,7 @@ let rec analyse_type_affectation a =
       begin
       match typ with
       | Adr(t) ->
-        (na,t)
+        (Deref(na),t)
       | _ ->
         raise (TypeNonDeferencable(typ))
       end 
@@ -158,6 +158,7 @@ let rec analyse_type_instruction tf i =
       | Int -> AffichageInt ne
       | Rat -> AffichageRat ne
       | Bool -> AffichageBool ne
+      | Adr _ -> AffichageInt ne
       | tr -> raise (TypeInattendu (tr, te))
       end
 

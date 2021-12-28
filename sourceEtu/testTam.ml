@@ -117,3 +117,6 @@ let%expect_test "pointeur1" =
 let%expect_test "pointeur2" =
   runtam "../../fichiersRat/src-rat-pointeur-test/testpointeur2.rat";
   [%expect{| 4 |}]
+let%expect_test "pointeur3" =
+  runtam "../../fichiersRat/src-rat-pointeur-test/testpointeur3.rat";
+  [%expect{| 3 |}]

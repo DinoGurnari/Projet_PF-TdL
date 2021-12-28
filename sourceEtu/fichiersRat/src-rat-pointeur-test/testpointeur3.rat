@@ -1,5 +1,5 @@
 main{
-int * px = (new int);
+int * px = null;
 int x = 3;
 px = &x;
 int y = (*px);

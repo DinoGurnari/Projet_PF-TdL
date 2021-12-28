@@ -14,8 +14,8 @@ let rec est_compatible t1 t2 =
   | Bool, Bool -> true
   | Int, Int -> true
   | Rat, Rat -> true 
-  | _, Null -> true
-  | Null, _ -> true
+  | Adr _, Null -> true
+  | Null, Adr _ -> true
   | Adr(typ1), Adr(typ2) -> est_compatible typ1 typ2 
   | _ -> false 
 

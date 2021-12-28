@@ -1,4 +1,4 @@
-; /home/vlebrun2/Annee_2/PF/TP-TdL/sourceEtu/fichiersRat/src-rat-pointeur-test/testpointeur1.rat
+; /home/vlebrun2/Annee_2/PF/TP-TdL/sourceEtu/fichiersRat/src-rat-pointeur-test/testpointeur2.rat
 JUMP main
 
 pgcd
@@ -73,21 +73,24 @@ RETURN (2) 4
 main
 PUSH 1
 LOADL 1
-SUBR Malloc
+SUBR MAlloc
 STORE (1) 0[SB]
-PUSH 1
-LOADL 3
-STORE (1) 1[SB]
-LOADA 1[SB]
-LOADA 0[SB]
+LOADL 4
+LOAD (1) 0[SB]
 STOREI (1)
-LOADA 0[SB]
+PUSH 1
+LOADL 18
+STORE (1) 1[SB]
+PUSH 1
+LOADA 1[SB]
+STORE (1) 2[SB]
+LOAD (1) 0[SB]
+LOADI (1)
+LOAD (1) 2[SB]
+STOREI (1)
+LOAD (1) 2[SB]
 LOADI (1)
 SUBR IOut
-PUSH 1
-LOADA 0[SB]
-LOADI (1)
-STORE (1) 2[SB]
 POP (0) 3
 
 HALT
