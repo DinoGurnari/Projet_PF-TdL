@@ -56,6 +56,8 @@ and instruction =
   | Declaration of typ * string * expression
   (* Affectation d'une variable représentée par son nom et la nouvelle valeur affectée *)
   | Affectable of affectable * expression
+  (* Assignation d'addition représentée par le nom de la variable et la valeur qu'on lui ajoute *)
+  | AssignationPlus of affectable * expression
   (* Déclaration d'une constante représentée par son nom et sa valeur (entier) *)
   | Constante of string * int
   (* Affichage d'une expression *)

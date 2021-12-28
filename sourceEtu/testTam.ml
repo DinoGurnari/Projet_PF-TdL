@@ -120,3 +120,6 @@ let%expect_test "pointeur2" =
 let%expect_test "pointeur3" =
   runtam "../../fichiersRat/src-rat-pointeur-test/testpointeur3.rat";
   [%expect{| 3 |}]
+let%expect_test "plusegal" =
+  runtam "../../fichiersRat/src-rat-plusegal-test/plusegaltest1.rat";
+  [%expect{| 7[37/40] |}]

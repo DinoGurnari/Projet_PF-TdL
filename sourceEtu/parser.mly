@@ -41,6 +41,7 @@ open Ast.AstSyntax
 %token NULL
 %token ADR
 
+%token PLUSEGAL
 (* Type de l'attribut synthétisé des non-terminaux *)
 %type <programme> prog
 %type <instruction list> bloc
@@ -80,6 +81,7 @@ i :
 | IF exp=e li1=bloc ELSE li2=bloc   {Conditionnelle (exp,li1,li2)}
 | WHILE exp=e li=bloc               {TantQue (exp,li)}
 | RETURN exp=e PV                   {Retour (exp)}
+| aff=a PLUSEGAL expr=e PV          {AssignationPlus(aff,expr)}
 
 dp :
 |                         {[]}

@@ -173,6 +173,11 @@ let rec analyse_tds_instruction tds i =
       let ne = analyse_tds_expression tds e in
       Retour (ne)
 
+  | AstSyntax.AssignationPlus (a,e) ->
+      let na = analyse_tds_affectation a true tds in
+      let ne = analyse_tds_expression tds e in
+        AstTds.Affectation(na,AstTds.Binaire(Plus,AstTds.Affectation(na),ne)) 
+
       
 (* analyse_tds_bloc : AstSyntax.bloc -> AstTds.bloc *)
 (* Paramètre tds : la table des symboles courante *)

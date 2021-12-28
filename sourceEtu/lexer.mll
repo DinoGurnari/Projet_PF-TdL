@@ -62,6 +62,7 @@ rule token = parse
 | "*"          { MULT }
 | "<"          { INF }
 | "&"          { ADR }
+| "+="         { PLUSEGAL }
 
 (* constantes entières *)
 | ("-")?['0'-'9']+ as i
