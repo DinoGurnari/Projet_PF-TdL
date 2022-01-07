@@ -9,6 +9,7 @@ open Ast.AstSyntax
 
 %token <int> ENTIER
 %token <string> ID
+%token <string> TID
 %token RETURN
 %token PV
 %token AO
@@ -42,10 +43,12 @@ open Ast.AstSyntax
 %token ADR
 
 %token PLUSEGAL
+
+%token TYPEDEF
 (* Type de l'attribut synthétisé des non-terminaux *)
 %type <programme> prog
 %type <instruction list> bloc
-%type <fonction> fonc
+%type <fonction list> fonc
 %type <instruction list> is
 %type <instruction> i
 %type <typ> typ
@@ -53,6 +56,7 @@ open Ast.AstSyntax
 %type <expression> e 
 %type <expression list> cp
 %type <affectable> a
+%type <typedef list> td
 
 (* Type et définition de l'axiome *)
 %start <Ast.AstSyntax.programme> main
@@ -62,10 +66,12 @@ open Ast.AstSyntax
 main : lfi = prog EOF     {lfi}
 
 prog :
-| lf = fonc  lfi = prog   {let (Programme (lf1,li))=lfi in (Programme (lf::lf1,li))}
-| ID li = bloc            {Programme ([],li)}
+| tdl= td lf = fonc  ID li = bloc   {Programme (tdl,lf,li)}
 
-fonc : t=typ n=ID PO p=dp PF AO li=is AF {Fonction(t,n,p,li)}
+
+fonc : 
+|                                             {[]}
+|t=typ n=ID PO p=dp PF AO li=is AF lf = fonc  {Fonction(t,n,p,li)::lf}
 
 bloc : AO li = is AF      {li}
 
@@ -82,16 +88,18 @@ i :
 | WHILE exp=e li=bloc               {TantQue (exp,li)}
 | RETURN exp=e PV                   {Retour (exp)}
 | aff=a PLUSEGAL expr=e PV          {AssignationPlus(aff,expr)}
+| TYPEDEF n=TID EQUAL t=typ  PV     {DeclarationType (Typedef(n,t))}
 
 dp :
 |                         {[]}
 | t=typ n=ID lp=dp        {(t,n)::lp}
 
 typ :
-| BOOL    {Bool}
-| INT     {Int}
-| RAT     {Rat}
-| t=typ MULT {Adr (t)}
+| BOOL        {Bool}
+| INT         {Int}
+| RAT         {Rat}
+| t=typ MULT  {Adr (t)}
+| n=TID       {Tid(n)}
 
 e : 
 | CALL n=ID PO lp=cp PF   {AppelFonction (n,lp)}
@@ -119,3 +127,6 @@ a :
 | n=ID                    {Ident (n)}
 | PO MULT aff=a PF        {Deref (aff)}
 
+td : 
+|                                                 {[]}
+| TYPEDEF n=TID EQUAL t=typ  PV tidl=td           {Typedef(n,t)::tidl}

@@ -1,4 +1,5 @@
-type typ = Bool | Int | Rat | Undefined | Adr of typ | Null
+type typ = Bool | Int | Rat | Undefined | Adr of typ | Null | Tid of string
+
 let rec string_of_type t = 
   match t with
   | Bool ->  "Bool"
@@ -7,6 +8,8 @@ let rec string_of_type t =
   | Undefined -> "Undefined"
   | Adr(typ) -> "Adress of " ^ string_of_type typ
   | Null -> "Null"
+  | Tid(tid) -> tid
+  
 
 
 let rec est_compatible t1 t2 =
@@ -49,12 +52,14 @@ let%test _ = not (est_compatible_list [Int] [Rat ; Int])
 let%test _ = not (est_compatible_list [Int ; Rat] [Rat ; Int])
 let%test _ = not (est_compatible_list [Bool ; Rat ; Bool] [Bool ; Rat ; Bool ; Int])
 
-let getTaille t =
+let rec getTaille t =
   match t with
   | Int -> 1
   | Bool -> 1
   | Rat -> 2
   | Undefined -> 0
+  | Adr(typ) -> getTaille typ
+  | Null -> 0
   
 let%test _ = getTaille Int = 1
 let%test _ = getTaille Bool = 1

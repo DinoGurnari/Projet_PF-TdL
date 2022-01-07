@@ -13,6 +13,13 @@ struct
 (* Paramètre aff : l'affectation à analyser *)
 (* Paramètre modifie : booléen pour savoir si on modifie ou pas la variable *)
 (* Génère le code et renvoie un String *)
+let rec get_taille_a a = 
+  match a with
+  | AstType.Ident(ia) ->
+    Tds.getTaille ia
+  | AstType.Deref(a) ->
+    get_taille_a a
+
 
 let rec generation_code_affectation aff modifie =
   match aff with 
@@ -23,7 +30,8 @@ let rec generation_code_affectation aff modifie =
     | InfoConst (_, value ) ->
       "LOADL " ^ string_of_int value ^ "\n"
     | InfoVar(_)->
-      let adr = getAdresse ia in 
+      let adr = getAdresse ia in
+      let l = Tds.getTaille ia in
       begin
       match t with
       | Adr(_) ->
@@ -33,20 +41,20 @@ let rec generation_code_affectation aff modifie =
         else
           "LOAD (1) " ^ adr  ^ "\n"
       | _ ->
-        let t = Tds.getTaille ia in
         if modifie then
-          "STORE (" ^ string_of_int t ^ ") " ^ adr ^ "\n" 
+          "STORE (" ^ string_of_int l ^ ") " ^ adr ^ "\n" 
         else
-          "LOAD (" ^ string_of_int t ^ ") " ^ adr ^ "\n" 
+          "LOAD (" ^ string_of_int l ^ ") " ^ adr ^ "\n" 
       end
     | InfoFun _ -> failwith "pas possible"
     end
   |AstType.Deref(a) ->
     let code_a = generation_code_affectation a false in
+    let taille_a = get_taille_a a in
     if modifie then
-      code_a ^ "STOREI (1)\n"
+      code_a ^ "STOREI (" ^ string_of_int taille_a ^ ")\n"
     else
-      code_a ^ "LOADI (1)\n"
+      code_a ^ "LOADI (" ^ string_of_int taille_a ^ ")\n"
         
 (* generation_code_expression : AstPlacement.expression -> String *)
 (* Paramètre e : l'expression à analyser *)

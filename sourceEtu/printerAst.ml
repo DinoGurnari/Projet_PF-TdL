@@ -71,6 +71,9 @@ struct
           | Fraction -> "["^(string_of_expression e1)^"/"^(string_of_expression e2)^"] "
           | _ -> (string_of_expression e1)^(string_of_binaire b)^(string_of_expression e2)^" "
         end
+    | Null -> "Null "
+    | New(typ) -> "New " ^ (string_of_type typ) ^ " "
+    | Adr(id) -> "Adresse de " ^ id ^ " "
 
   (* Conversion des instructions *)
   let rec string_of_instruction i =
@@ -85,13 +88,17 @@ struct
     | TantQue (c,b) -> "TantQue  : TQ "^(string_of_expression c)^"\n"^
                                   "FAIRE \n"^((List.fold_right (fun i tq -> (string_of_instruction i)^tq) b ""))^"\n"
     | Retour (e) -> "Retour  : RETURN "^(string_of_expression e)^"\n"
-
+    | AssignationPlus (a,e) -> "Assignation Plus  : "^ (string_of_affectation a) ^ " += " ^ (string_of_expression e) ^ "\n"
+    | DeclarationType (Typedef(tid,typ)) -> "Declaration type : " ^ tid ^ " = " ^ (string_of_type typ) ^ "\n"
   (* Conversion des fonctions *)
   let string_of_fonction (Fonction(t,n,lp,li)) = (string_of_type t)^" "^n^" ("^((List.fold_right (fun (t,n) tq -> (string_of_type t)^" "^n^" "^tq) lp ""))^") = \n"^
                                         ((List.fold_right (fun i tq -> (string_of_instruction i)^tq) li ""))^"\n"
 
+  let string_of_typedef (Typedef(tid,t)) = tid ^ " = " ^ (string_of_type t)
+
   (* Conversion d'un programme Rat *)
-  let string_of_programme (Programme (fonctions, instruction)) =
+  let string_of_programme (Programme (deftypes,fonctions, instruction)) =
+    (List.fold_right (fun t tq -> (string_of_typedef t)^tq) deftypes "")^
     (List.fold_right (fun f tq -> (string_of_fonction f)^tq) fonctions "")^
     (List.fold_right (fun i tq -> (string_of_instruction i)^tq) instruction "")
 

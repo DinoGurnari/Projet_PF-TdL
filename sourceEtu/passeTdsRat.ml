@@ -6,9 +6,36 @@ struct
   open Exceptions
   open Ast
   open AstTds
+  open Type
 
   type t1 = Ast.AstSyntax.programme
   type t2 = Ast.AstTds.programme
+
+let analyse_tds_type tds typ =
+  match typ with
+    | Tid(tid) -> 
+      let sia = chercherGlobalement tds tid in
+        begin
+        match sia with
+          | None -> raise (TypeNonDeclare tid)
+          | Some ia ->
+            begin
+            match info_ast_to_info ia with
+              | InfoType(_,t) -> t
+              | _ -> raise (MauvaiseUtilisationIdentifiant tid)
+            end
+        end
+    | _ -> typ
+
+let analyse_tds_deftype tds (AstSyntax.Typedef(tid,typ)) = 
+  match Tds.chercherLocalement tds tid with
+    | Some _ -> raise (DoubleDeclaration tid)
+    | None ->
+      let t = analyse_tds_type tds typ in
+      let info = InfoType(tid,t) in
+      let ia = info_to_info_ast info in
+        ajouter tds tid ia
+        
 
 
 let rec analyse_tds_affectation a modife tds =
@@ -22,6 +49,8 @@ let rec analyse_tds_affectation a modife tds =
       begin
       match info_ast_to_info ia with 
       | InfoFun _ -> 
+        raise (MauvaiseUtilisationIdentifiant id)
+      | InfoType _ -> 
         raise (MauvaiseUtilisationIdentifiant id)
       | InfoConst(id,_) -> 
         begin
@@ -82,7 +111,8 @@ let rec analyse_tds_expression tds e =
   | AstSyntax.Null ->
     AstTds.Null
   | AstSyntax.New(t) ->
-    AstTds.New(t)
+    let typ = analyse_tds_type tds t in
+    AstTds.New(typ)
   | AstSyntax.Adr(id) ->
     match Tds.chercherGlobalement tds id with
     | None -> raise (IdentifiantNonDeclare id)
@@ -121,7 +151,8 @@ let rec analyse_tds_instruction tds i =
             ajouter tds n ia;
             (* Renvoie de la nouvelle déclaration où le nom a été remplacé par l'information 
             et l'expression remplacée par l'expression issue de l'analyse *)
-            Declaration (t, ia, ne) 
+            let typ = analyse_tds_type tds t in
+            Declaration (typ, ia, ne) 
         | Some _ ->
             (* L'identifiant est trouvé dans la tds locale, 
             il a donc déjà été déclaré dans le bloc courant *) 
@@ -177,6 +208,10 @@ let rec analyse_tds_instruction tds i =
       let na = analyse_tds_affectation a true tds in
       let ne = analyse_tds_expression tds e in
         AstTds.Affectation(na,AstTds.Binaire(Plus,AstTds.Affectation(na),ne)) 
+  | AstSyntax.DeclarationType (deftype) ->
+      analyse_tds_deftype tds deftype;
+        Empty
+      
 
       
 (* analyse_tds_bloc : AstSyntax.bloc -> AstTds.bloc *)
@@ -215,14 +250,16 @@ let analyse_tds_fonction maintds (AstSyntax.Fonction(t,n,lp,li))  =
         | None ->
           let info = InfoVar (x,Undefined, 0, "") in
           let ia = info_to_info_ast info in
-          ajouter tdsbloc x ia; 
-          (typage, ia) 
+          ajouter tdsbloc x ia;
+          let typ = analyse_tds_type maintds typage in 
+          (typ, ia) 
         | Some _ ->
           raise (DoubleDeclaration x)
         in 
           let lpn = List.map ajouter_para lp in
           let lin = List.map (analyse_tds_instruction tdsbloc) li in
-          Fonction(t,ia,lpn,lin)    
+          let typ = analyse_tds_type maintds t in 
+          Fonction(typ,ia,lpn,lin)    
               
        
 
@@ -231,8 +268,9 @@ let analyse_tds_fonction maintds (AstSyntax.Fonction(t,n,lp,li))  =
 (* Vérifie la bonne utilisation des identifiants et tranforme le programme
 en un programme de type AstTds.ast *)
 (* Erreur si mauvaise utilisation des identifiants *)
-let analyser (AstSyntax.Programme (fonctions,prog)) =
+let analyser (AstSyntax.Programme (deftypes,fonctions,prog)) =
   let tds = creerTDSMere () in
+  let _ = List.map (analyse_tds_deftype tds) deftypes in 
   let nf = List.map (analyse_tds_fonction tds) fonctions in 
   let nb = analyse_tds_bloc tds prog in
   Programme (nf,nb)

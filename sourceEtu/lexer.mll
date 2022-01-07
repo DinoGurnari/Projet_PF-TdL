@@ -32,6 +32,7 @@
         "false",   FALSE;
         "return",  RETURN;
         "new",     NEW;
+        "typedef", TYPEDEF; 
         "null",    NULL
       ];
     fun id ->
@@ -71,6 +72,9 @@ rule token = parse
 | ['a'-'z'](['A'-'Z''a'-'z''0'-'9']|"-"|"_")* as n
                { ident n }
 
+(* identifiants et mots-clefs de type *)
+| ['A'-'Z'](['A'-'Z''a'-'z''0'-'9']|"-"|"_")* as n
+               { TID (n) }
 (* fin de lecture *)
 | eof          { EOF }
 (* entrée non reconnue *)

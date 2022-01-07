@@ -79,13 +79,6 @@ SUBR IMul
 CALL (ST) norm
 RETURN (2) 4\n\n"
 
-let adrout =
-"adrout
-LOAD (1) -1[LB]
-SUBR Iout
-RETURN (0) 1\n\n"
-
-
 (* Entête des fichiers Rat  contenant :
 - un saut vers le programme principal
 - la fonction pgcd nécessaire à la normalisation des rationnels

@@ -16,6 +16,9 @@ end
 module AstSyntax =
 struct
 
+(* définition d'un nouveau type *)
+type typedef = Typedef of string * typ
+
 (* Opérateurs unaires de Rat *)
 type unaire = Numerateur | Denominateur
 
@@ -68,6 +71,8 @@ and instruction =
   | TantQue of expression * bloc
   (* return d'une fonction *)
   | Retour of expression
+  (* Déclaration d'un type dans un bloc *)
+  | DeclarationType of typedef
 
 
 (* Structure des fonctions de Rat *)
@@ -76,7 +81,9 @@ type fonction = Fonction of typ * string * (typ * string) list * bloc
 
 (* Structure d'un programme Rat *)
 (* liste de fonction - programme principal *)
-type programme = Programme of fonction list * bloc
+type programme = Programme of typedef list * fonction list * bloc
+
+
 
 end
 

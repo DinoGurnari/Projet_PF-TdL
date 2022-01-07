@@ -6,6 +6,7 @@ type info =
   | InfoConst of string * int
   | InfoVar of string * typ * int * string
   | InfoFun of string * typ * typ list
+  | InfoType of string * typ
 
 (* Données stockées dans la tds  et dans les AST : pointeur sur une information *)
 type info_ast = info ref  
@@ -57,18 +58,17 @@ let getType ia =
   | InfoConst _ -> Int
   | InfoVar (_, t, _, _) -> t
   | InfoFun (_, t, _) -> t
+  
 
 let getTaille ia = 
   let typ = getType ia in
-  match typ with
-  | Rat -> 2
-  | _ -> 1
+  getTaille typ
 
 let getAdresse ia =
   let info = info_ast_to_info ia in
   match info with
   | InfoVar(_,_,d,r) -> string_of_int d ^ "[" ^ r ^ "]"
-  | InfoConst(t,_) -> failwith ("Pas possible(const)" ^ t)
+  | _ -> failwith ("Pas possible")
 
 
 

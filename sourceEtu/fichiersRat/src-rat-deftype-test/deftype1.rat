@@ -1,0 +1,5 @@
+main {
+    typedef Int2 = int;
+    Int2 a = 3;
+    print a;
+}
