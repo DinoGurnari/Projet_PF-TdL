@@ -45,6 +45,10 @@ open Ast.AstSyntax
 %token PLUSEGAL
 
 %token TYPEDEF
+
+%token STRUCT
+%token PT
+
 (* Type de l'attribut synthétisé des non-terminaux *)
 %type <programme> prog
 %type <instruction list> bloc
@@ -95,11 +99,12 @@ dp :
 | t=typ n=ID lp=dp        {(t,n)::lp}
 
 typ :
-| BOOL        {Bool}
-| INT         {Int}
-| RAT         {Rat}
-| t=typ MULT  {Adr (t)}
-| n=TID       {Tid(n)}
+| BOOL                {Bool}
+| INT                 {Int}
+| RAT                 {Rat}
+| t=typ MULT          {Adr (t)}
+| n=TID               {Tid(n)}
+| STRUCT AO p=dp AF   {Record(p)}
 
 e : 
 | CALL n=ID PO lp=cp PF   {AppelFonction (n,lp)}
@@ -118,6 +123,7 @@ e :
 | NULL                    {Null}
 | PO NEW t=typ PF         {New (t)}
 | ADR n=ID                {Adr (n)}
+| AO lp=cp AF             {Enre(lp)}
 
 cp :
 |               {[]}
@@ -126,6 +132,7 @@ cp :
 a :
 | n=ID                    {Ident (n)}
 | PO MULT aff=a PF        {Deref (aff)}
+| PO aff=a PT n=ID PF     {Champ (aff,n)}
 
 td : 
 |                                                 {[]}

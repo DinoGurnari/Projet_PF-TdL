@@ -25,7 +25,8 @@ let rec analyse_type_affectation a =
       | _ ->
         raise (TypeNonDeferencable(typ))
       end 
-    
+  |AstTds.Champ(aff,ia) ->
+  failwith "pascoder"
 
 
 (* analyse_type_expression : AstTds.expression -> (AstType.expression * typ) *)
@@ -124,6 +125,10 @@ let rec analyse_type_expression e =
 
   | AstTds.Adr(ia) ->
     (AstType.Adr(ia), Adr(getType ia))
+  | AstTds.Enre(le) ->
+    let len = List.map analyse_type_expression le in
+    let listTypesExp = List.map (fun (_,y) -> y) len in
+      failwith "pascoder"
 
         
 

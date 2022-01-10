@@ -11,7 +11,9 @@ type info =
   | InfoFun of string * typ * typ list
   (* Information associée à un type crée *)
   | InfoType of string * typ
-
+  (* Information associée à un enregistrement crée *)
+  | InfoEnre of string * typ list
+  
 (* Table des symboles *)
 type tds 
 

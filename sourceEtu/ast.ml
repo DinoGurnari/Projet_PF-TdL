@@ -45,12 +45,16 @@ type expression =
   | New of typ
   (* accès à l'adresse *)
   | Adr of string
+  (* Enregistrement*)
+  | Enre of expression list
 (* affectation possible de Rat *)
 and affectable =
   (* Accès à la valeur pointée (en lecteur ou écriture) *)
   | Deref of affectable
   (* Accès à un identifiant représenté par son nom *)
   | Ident of string
+  (* Accès à un champ d'un enregistrement *)
+  | Champ of affectable * string
 
 (* Instructions de Rat *)
 type bloc = instruction list
@@ -107,12 +111,14 @@ struct
     | Null 
     | New of typ
     | Adr of Tds.info_ast
+    | Enre of expression list
 
   and affectable =
     (* Accès à la valeur pointée (en lecteur ou écriture) *)
     | Deref of affectable
     (* Accès à un identifiant représenté par son nom *)
     | Ident of Tds.info_ast
+    | Champ of affectable * Tds.info_ast
     
     (* instructions existantes dans notre langage *)
     (* ~ instruction de l'AST syntaxique où les noms des identifiants ont été

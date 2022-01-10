@@ -1,4 +1,4 @@
-type typ = Bool | Int | Rat | Undefined | Adr of typ | Null | Tid of string
+type typ = Bool | Int | Rat | Undefined | Adr of typ | Null | Tid of string | Record of (typ * string) list
 
 let rec string_of_type t = 
   match t with

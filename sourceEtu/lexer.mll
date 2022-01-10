@@ -32,7 +32,8 @@
         "false",   FALSE;
         "return",  RETURN;
         "new",     NEW;
-        "typedef", TYPEDEF; 
+        "typedef", TYPEDEF;
+        "struct",  STRUCT;
         "null",    NULL
       ];
     fun id ->
@@ -64,6 +65,7 @@ rule token = parse
 | "<"          { INF }
 | "&"          { ADR }
 | "+="         { PLUSEGAL }
+| "."          { PT}
 
 (* constantes entières *)
 | ("-")?['0'-'9']+ as i

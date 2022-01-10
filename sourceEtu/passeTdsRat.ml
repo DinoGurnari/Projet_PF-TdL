@@ -38,7 +38,7 @@ let analyse_tds_deftype tds (AstSyntax.Typedef(tid,typ)) =
         
 
 
-let rec analyse_tds_affectation a modife tds =
+let rec analyse_tds_affectation a modife enregistrement tds =
 
   match a with 
   | AstSyntax.Ident(id) ->
@@ -61,11 +61,34 @@ let rec analyse_tds_affectation a modife tds =
         end
       | InfoVar _ -> 
         AstTds.Ident(ia)
+      | InfoEnre _ ->
+        if enregistrement then
+          AstTds.Ident(ia)
+        else
+          raise (MauvaiseUtilisationIdentifiant id)
+
       end
     end
   | AstSyntax.Deref aff -> 
-    let na =analyse_tds_affectation aff modife tds in
+    let na =analyse_tds_affectation aff modife enregistrement tds in
     AstTds.Deref(na)
+  | AstSyntax.Champ(aff,n) ->
+    let na =analyse_tds_affectation aff modife true tds in
+      begin
+      match Tds.chercherGlobalement tds n with
+      | None -> raise (IdentifiantNonDeclare n)
+      | Some ia -> 
+        begin
+        match info_ast_to_info ia with
+        | InfoVar _->
+          AstTds.Champ(na,ia)
+        | _ ->
+          raise (MauvaiseUtilisationIdentifiant n)
+        end
+      end
+
+
+    
 
 
 
@@ -106,7 +129,7 @@ let rec analyse_tds_expression tds e =
   | AstSyntax.Binaire(bin, expression1, expression2) ->
     AstTds.Binaire(bin, analyse_tds_expression tds expression1, analyse_tds_expression tds expression2)
   | AstSyntax.Affectation(aff) ->
-    let na = analyse_tds_affectation aff false tds in
+    let na = analyse_tds_affectation aff false false tds in
       AstTds.Affectation(na)
   | AstSyntax.Null ->
     AstTds.Null
@@ -114,6 +137,7 @@ let rec analyse_tds_expression tds e =
     let typ = analyse_tds_type tds t in
     AstTds.New(typ)
   | AstSyntax.Adr(id) ->
+    begin
     match Tds.chercherGlobalement tds id with
     | None -> raise (IdentifiantNonDeclare id)
     | Some ia -> 
@@ -122,7 +146,11 @@ let rec analyse_tds_expression tds e =
       | InfoVar _ -> AstTds.Adr(ia)
       | _ -> raise (MauvaiseUtilisationIdentifiant id) 
       end 
-  
+    end
+  | AstSyntax.Enre(le) ->
+    let nle = List.map (analyse_tds_expression tds) le in
+      AstTds.Enre(nle)
+
 
 
 
@@ -143,15 +171,22 @@ let rec analyse_tds_instruction tds i =
             (* Vérification de la bonne utilisation des identifiants dans l'expression *)
             (* et obtention de l'expression transformée *) 
             let ne = analyse_tds_expression tds e in
+            let typ = analyse_tds_type tds t in
             (* Création de l'information associée à l'identfiant *)
-            let info = InfoVar (n,Undefined, 0, "") in
+            let info = 
+              
+              match typ with
+                | Type.Record _ ->
+                  InfoEnre (n,[])
+                | _ ->
+                  InfoVar (n,Undefined, 0, "") in
             (* Création du pointeur sur l'information *)
             let ia = info_to_info_ast info in
             (* Ajout de l'information (pointeur) dans la tds *)
             ajouter tds n ia;
             (* Renvoie de la nouvelle déclaration où le nom a été remplacé par l'information 
             et l'expression remplacée par l'expression issue de l'analyse *)
-            let typ = analyse_tds_type tds t in
+            
             Declaration (typ, ia, ne) 
         | Some _ ->
             (* L'identifiant est trouvé dans la tds locale, 
@@ -159,7 +194,7 @@ let rec analyse_tds_instruction tds i =
             raise (DoubleDeclaration n)
       end
   | AstSyntax.Affectable (aff,e) ->
-    let na = analyse_tds_affectation aff true tds in
+    let na = analyse_tds_affectation aff true false tds in
     let ne = analyse_tds_expression tds e in
     AstTds.Affectation (na,ne)
   | AstSyntax.Constante (n,v) -> 
@@ -205,7 +240,7 @@ let rec analyse_tds_instruction tds i =
       Retour (ne)
 
   | AstSyntax.AssignationPlus (a,e) ->
-      let na = analyse_tds_affectation a true tds in
+      let na = analyse_tds_affectation a true false tds in
       let ne = analyse_tds_expression tds e in
         AstTds.Affectation(na,AstTds.Binaire(Plus,AstTds.Affectation(na),ne)) 
   | AstSyntax.DeclarationType (deftype) ->

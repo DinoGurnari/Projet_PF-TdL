@@ -1,0 +1,10 @@
+main{
+int * * ppx = null;
+int * px = null;
+int x = 3;
+px = &x;
+ppx = &px;
+int y = (*px);
+print (*(*ppx));
+
+}
