@@ -1,0 +1,6 @@
+main{
+    typedef Point2D = struct {int x int y} ;
+    Point2D p1 = {3 4}; 
+    int a = 1;
+    print a;
+}

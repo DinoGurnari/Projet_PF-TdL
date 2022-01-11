@@ -19,7 +19,8 @@ let rec get_taille_a a =
     Tds.getTaille ia
   | AstType.Deref(a) ->
     get_taille_a a
-
+  | AstType.Champ(_,ia) ->
+    Tds.getTaille ia
 
 let rec generation_code_affectation aff modifie =
   match aff with 
@@ -55,7 +56,14 @@ let rec generation_code_affectation aff modifie =
       code_a ^ "STOREI (" ^ string_of_int taille_a ^ ")\n"
     else
       code_a ^ "LOADI (" ^ string_of_int taille_a ^ ")\n"
-        
+  |AstType.Champ(aff,ia) -> 
+    let adr = getAdresse ia in
+    let l = Tds.getTaille ia in
+        if modifie then
+          "STORE (" ^ string_of_int l ^ ") " ^ adr ^ "\n" 
+        else
+          "LOAD (" ^ string_of_int l ^ ") " ^ adr ^ "\n" 
+
 (* generation_code_expression : AstPlacement.expression -> String *)
 (* Paramètre e : l'expression à analyser *)
 (* Génère le code et renvoie un String *)
@@ -112,7 +120,8 @@ let rec generation_code_expression e =
   | AstType.Adr(ia) ->
     let adr = getAdresse ia in
       "LOADA " ^ adr ^ "\n"
-
+  | AstType.Enre(le) ->
+       List.fold_left (fun a b -> a ^ generation_code_expression b) "" le
  
 
 (* generation_code_instruction : AstPlacement.instruction -> String *)

@@ -132,3 +132,6 @@ let%expect_test "deftype1" =
 let%expect_test "deftype2" =
   runtam "../../fichiersRat/src-rat-deftype-test/deftype1.rat";
   [%expect{| 3 |}]
+let%expect_test "enre1" =
+  runtam "../../fichiersRat/src-rat-enre-test/testenre1.rat";
+  [%expect{| 1 |}]

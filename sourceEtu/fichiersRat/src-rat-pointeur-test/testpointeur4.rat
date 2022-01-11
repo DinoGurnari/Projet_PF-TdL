@@ -6,5 +6,4 @@ px = &x;
 ppx = &px;
 int y = (*px);
 print (*(*ppx));
-
 }

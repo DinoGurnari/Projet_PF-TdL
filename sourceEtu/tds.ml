@@ -1,16 +1,17 @@
 open Hashtbl
 open Type
 
+
 (* Définition du type des informations associées aux identifiants *)
 type info =
   | InfoConst of string * int
   | InfoVar of string * typ * int * string
   | InfoFun of string * typ * typ list
   | InfoType of string * typ
-  | InfoEnre of string * typ list
+  | InfoEnre of string * typ list * info_ast list * int * int * string
 
-(* Données stockées dans la tds  et dans les AST : pointeur sur une information *)
-type info_ast = info ref  
+ (* Données stockées dans la tds  et dans les AST : pointeur sur une information *)
+and info_ast = info ref 
 
 (* Table des symboles hiérarchique *)
 (* Les tables locales sont codées à l'aide d'une hashtable *)
@@ -61,14 +62,18 @@ let getType ia =
   | InfoFun (_, t, _) -> t
   
 
-let getTaille ia = 
-  let typ = getType ia in
-  getTaille typ
+let getTaille ia =
+  match info_ast_to_info ia with
+  | InfoEnre(_,_,_,t,_,_) -> t
+  | _ ->
+    let typ = getType ia in
+    getTaille typ
 
 let getAdresse ia =
   let info = info_ast_to_info ia in
   match info with
   | InfoVar(_,_,d,r) -> string_of_int d ^ "[" ^ r ^ "]"
+  | InfoEnre(_,_,_,_,d,r) -> string_of_int d ^ "[" ^ r ^ "]"
   | _ -> failwith ("Pas possible")
 
 
@@ -78,6 +83,8 @@ let getTaillePara ia =
   match info with
   | InfoFun(_,_,lp) ->
     List.fold_left (fun a b -> a + Type.getTaille b) 0 lp
+  | InfoEnre(_,lpa,_,_,_,_) ->
+    List.fold_left (fun a b -> a + Type.getTaille b) 0 lpa
   | _ -> 
     failwith "impossible"
 
@@ -373,6 +380,13 @@ let afficher_globale tds =
     |InfoVar (n,_,dep,base) -> i:= InfoVar (n,t,dep,base)
     | _ -> failwith "Appel modifier_type_info pas sur un InfoVar"
 
+
+
+  let modifier_type_info_enre tl i = 
+    match !i with
+    |InfoEnre (n,_,ia,t,d,r) -> i:= InfoEnre(n,tl,ia,t,d,r)
+    | _ -> failwith "Appel modifier_type_info_enre pas sur un InfoEnre"
+
 let%test _ = 
   let info = InfoVar ("x", Undefined, 4 , "SB") in
   let ia = info_to_info_ast info in
@@ -399,7 +413,21 @@ let%test _ =
  let modifier_adresse_info d b i =
      match !i with
      |InfoVar (n,t,_,_) -> i:= InfoVar (n,t,d,b)
+     |InfoEnre (n,t,ial,l,_,_) -> i:= InfoEnre (n,t,ial,l,d,b)
      | _ -> failwith "Appel modifier_adresse_info pas sur un InfoVar"
+
+ let modifier_taille_enregistrement l i =
+    match !i with
+    | InfoEnre(n,t,ial,_,d,b) -> i:= InfoEnre (n,t,ial,l,d,b)
+    | _ -> failwith "Appel modifier_taille_enregistrement pas sur un InfoEnre"
+
+ let rec modifier_adresse_enre_ia d b ial =
+     match ial with
+     | ia::iaq -> 
+       modifier_adresse_info d b ia;
+       let t = getTaille ia in
+        modifier_adresse_enre_ia (d+t) b iaq;
+     | [] -> ()
 
 let%test _ = 
   let info = InfoVar ("x", Rat, 4 , "SB") in

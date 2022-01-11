@@ -1,6 +1,6 @@
 (* Types manipulés dans Rat *)
 type typ = Bool | Int | Rat | Undefined | Adr of typ | Null | Tid of string | Record of (typ * string) list
-
+| RecordTds of typ list
 (* string_of_type :  typ -> string *)
 (* transforme un typ en chaîne de caractère *)
 val string_of_type : typ -> string  

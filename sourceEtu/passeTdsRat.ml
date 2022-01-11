@@ -11,7 +11,7 @@ struct
   type t1 = Ast.AstSyntax.programme
   type t2 = Ast.AstTds.programme
 
-let analyse_tds_type tds typ =
+let rec analyse_tds_type tds typ =
   match typ with
     | Tid(tid) -> 
       let sia = chercherGlobalement tds tid in
@@ -25,6 +25,10 @@ let analyse_tds_type tds typ =
               | _ -> raise (MauvaiseUtilisationIdentifiant tid)
             end
         end
+    | Record pl ->
+      let npl = List.map (fun (t,x) -> (analyse_tds_type tds t,x)) pl in
+        Record(npl)
+        
     | _ -> typ
 
 let analyse_tds_deftype tds (AstSyntax.Typedef(tid,typ)) = 
@@ -74,21 +78,20 @@ let rec analyse_tds_affectation a modife enregistrement tds =
     AstTds.Deref(na)
   | AstSyntax.Champ(aff,n) ->
     let na =analyse_tds_affectation aff modife true tds in
-      begin
-      match Tds.chercherGlobalement tds n with
-      | None -> raise (IdentifiantNonDeclare n)
-      | Some ia -> 
-        begin
-        match info_ast_to_info ia with
-        | InfoVar _->
-          AstTds.Champ(na,ia)
-        | _ ->
-          raise (MauvaiseUtilisationIdentifiant n)
-        end
-      end
-
-
-    
+        
+        match na with
+        | AstTds.Ident(ia) ->
+          begin
+            match info_ast_to_info ia with
+            | InfoEnre(_,_,ial,_,_,_) ->
+              if (List.mem ia ial) then
+                AstTds.Champ(na,ia)
+              else
+                raise (ChampNonDeclare(n))
+            | _ -> failwith "impossible"
+          end
+        | _ -> failwith "impossible"
+   
 
 
 
@@ -149,6 +152,7 @@ let rec analyse_tds_expression tds e =
     end
   | AstSyntax.Enre(le) ->
     let nle = List.map (analyse_tds_expression tds) le in
+    
       AstTds.Enre(nle)
 
 
@@ -173,13 +177,30 @@ let rec analyse_tds_instruction tds i =
             let ne = analyse_tds_expression tds e in
             let typ = analyse_tds_type tds t in
             (* Création de l'information associée à l'identfiant *)
+            let ajouter_champs (typage, x) =
+                    begin
+                    match chercherLocalement tds x with
+                    
+                    | None ->
+                      let info = InfoVar (x,Undefined, 0, "") in
+                      let ia = info_to_info_ast info in
+                      ajouter tds x ia;
+                      let _ = analyse_tds_type tds typage in
+                      ia
+                    | Some _ ->
+                      raise (DoubleDeclaration x)
+                    end
+            in
             let info = 
-              
+              begin 
               match typ with
-                | Type.Record _ ->
-                  InfoEnre (n,[])
+                | Type.Record(lc) ->
+                  let nlc = List.map (ajouter_champs) lc in
+                  InfoEnre (n,[],nlc,0,0,"")
                 | _ ->
-                  InfoVar (n,Undefined, 0, "") in
+                  InfoVar (n,Undefined, 0, "")
+              end  
+            in
             (* Création du pointeur sur l'information *)
             let ia = info_to_info_ast info in
             (* Ajout de l'information (pointeur) dans la tds *)

@@ -12,13 +12,13 @@ type info =
   (* Information associée à un type crée *)
   | InfoType of string * typ
   (* Information associée à un enregistrement crée *)
-  | InfoEnre of string * typ list
-  
+  | InfoEnre of string * typ list * info_ast list * int * int * string
+(* Données stockées dans la tds et dans les AST : pointeur sur une information *)
+and info_ast
 (* Table des symboles *)
 type tds 
 
-(* Données stockées dans la tds et dans les AST : pointeur sur une information *)
-type info_ast
+
 
 (* Création d'une table des symboles à la racine *)
 val creerTDSMere : unit -> tds 
@@ -60,11 +60,20 @@ val info_ast_to_info : info_ast -> info
 (* Modifie le type si c'est une InfoVar, ne fait rien sinon *)
 val modifier_type_info : typ -> info_ast -> unit
 
+(* Modifie le type si c'est une InfoEnre, ne fait rien sinon *)
+val modifier_type_info_enre : typ list -> info_ast -> unit
+
 (* Modifie les types de retour et des paramètres si c'est une InfoFun, ne fait rien sinon *)
 val modifier_type_fonction_info : typ -> typ list -> info_ast -> unit
 
 (* Modifie l'emplacement (dépl, registre) si c'est une InfoVar, ne fait rien sinon *)
 val modifier_adresse_info : int -> string -> info_ast -> unit
+
+(* Modifie l'emplacement (dépl,registre) si c'est un enregistrement *)
+val modifier_adresse_enre_ia : int -> string -> info_ast list -> unit
+
+(* Modifie la taille de l'enregistrement *)
+val modifier_taille_enregistrement : int -> info_ast -> unit
 
 (* Renvoie le type d'une info ast *)
 val getType : info_ast -> typ

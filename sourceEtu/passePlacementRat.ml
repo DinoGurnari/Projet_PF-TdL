@@ -20,6 +20,15 @@ struct
 let rec analyse_placement_instruction reg dep i =
   match i with
   | AstType.Declaration (ia, _) ->
+    begin
+    match info_ast_to_info ia with
+    | InfoEnre(_,_,ial,_,_,_) ->
+      modifier_adresse_info dep reg ia;
+      modifier_adresse_enre_ia dep reg ial;
+      let t = getTaillePara ia in
+        modifier_taille_enregistrement t ia;
+        (i, dep + t) 
+    | _ ->
     modifier_adresse_info dep reg ia;
     let t = getType ia in
       begin
@@ -27,7 +36,7 @@ let rec analyse_placement_instruction reg dep i =
       | Rat -> (i, dep + 2)
       | _ -> (i, dep + 1)
       end
-
+    end
   | AstType.Conditionnelle (_,t,e) -> 
     let _ = analyse_placement_bloc reg dep t in
     let _ = analyse_placement_bloc reg dep e in

@@ -26,7 +26,8 @@ let rec analyse_type_affectation a =
         raise (TypeNonDeferencable(typ))
       end 
   |AstTds.Champ(aff,ia) ->
-  failwith "pascoder"
+    let (na,typ) = analyse_type_affectation aff in
+      (AstType.Champ(na,ia),getType ia)
 
 
 (* analyse_type_expression : AstTds.expression -> (AstType.expression * typ) *)
@@ -121,14 +122,22 @@ let rec analyse_type_expression e =
     (AstType.Null, Type.Null)
 
   | AstTds.New(typ) ->
+    begin
+    match typ with 
+    | Undefined -> raise (TypeNonInstantiable(typ)) 
+    | Adr t  -> raise (TypeNonInstantiable(typ))
+    | Null -> raise (TypeNonInstantiable(typ))
+    | _ ->
     (AstType.New , Adr(typ))
+    end
 
   | AstTds.Adr(ia) ->
     (AstType.Adr(ia), Adr(getType ia))
   | AstTds.Enre(le) ->
     let len = List.map analyse_type_expression le in
+    let expr = List.map (fun (x,_) -> x) len in
     let listTypesExp = List.map (fun (_,y) -> y) len in
-      failwith "pascoder"
+      (AstType.Enre(expr),RecordTds(listTypesExp))
 
         
 
@@ -139,9 +148,23 @@ let rec analyse_type_expression e =
 en une instruction de type AstType.instruction *)
 (* Erreur si mauvaise utilisation des types *)
 let rec analyse_type_instruction tf i =
+  begin
   match i with
   | AstTds.Declaration (t, ia, e) ->
-    modifier_type_info t ia;
+    let _ =
+    begin
+    
+    match t with
+      | Record lp ->
+            
+            let listtyp = List.map(fun (t,_)-> modifier_type_info t ia;t) lp in
+            modifier_type_info_enre listtyp ia
+            
+
+      | _ -> modifier_type_info t ia
+          
+    end
+    in 
     let (ne, te) = analyse_type_expression e in
       if est_compatible t te then 
         AstType.Declaration(ia, ne)
@@ -195,7 +218,7 @@ let rec analyse_type_instruction tf i =
       end
   | AstTds.Empty ->
     AstType.Empty
-          
+  end    
 (* analyse_type_bloc : AstTds.bloc -> AstType.bloc *)
 (* Paramètre li : liste d'instructions à analyser *)
 (* Vérifie la bonne utilisation des types et tranforme le bloc

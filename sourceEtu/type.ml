@@ -1,4 +1,5 @@
 type typ = Bool | Int | Rat | Undefined | Adr of typ | Null | Tid of string | Record of (typ * string) list
+| RecordTds of typ list
 
 let rec string_of_type t = 
   match t with
@@ -20,7 +21,21 @@ let rec est_compatible t1 t2 =
   | Adr _, Null -> true
   | Null, Adr _ -> true
   | Adr(typ1), Adr(typ2) -> est_compatible typ1 typ2 
+  | Record(lp), Record(lp2) -> 
+    let listtyp1 = List.map(fun (t,_)->t) lp in
+    let listtyp2 = List.map(fun (t,_)->t) lp2 in
+    est_compatible_list listtyp1 listtyp2
+  | Record(lp), RecordTds(lp2) ->
+    let listtyp1 = List.map(fun (t,_)->t) lp in
+      est_compatible_list listtyp1 lp2
+  | RecordTds(lp2), Record(lp) ->
+    let listtyp1 = List.map(fun (t,_)->t) lp in
+      est_compatible_list listtyp1 lp2
   | _ -> false 
+and est_compatible_list lt1 lt2 =
+  try
+    List.for_all2 est_compatible lt1 lt2
+  with Invalid_argument _ -> false
 
 let%test _ = est_compatible Bool Bool
 let%test _ = est_compatible Int Int
@@ -39,10 +54,6 @@ let%test _ = not (est_compatible Undefined Int)
 let%test _ = not (est_compatible Undefined Rat)
 let%test _ = not (est_compatible Undefined Bool)
 
-let est_compatible_list lt1 lt2 =
-  try
-    List.for_all2 est_compatible lt1 lt2
-  with Invalid_argument _ -> false
 
 let%test _ = est_compatible_list [] []
 let%test _ = est_compatible_list [Int ; Rat] [Int ; Rat]

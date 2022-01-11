@@ -166,10 +166,12 @@ type expression =
   | Null
   | New
   | Adr of Tds.info_ast
+  | Enre of expression list
 
 and affectable =
   | Deref of affectable
   | Ident of Tds.info_ast
+  | Champ of affectable * Tds.info_ast
 
 (* instructions existantes Rat *)
 (* = instruction de AstTds + informations associées aux identificateurs, mises à jour *)
