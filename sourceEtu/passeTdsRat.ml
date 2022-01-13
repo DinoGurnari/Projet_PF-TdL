@@ -10,7 +10,7 @@ struct
 
   type t1 = Ast.AstSyntax.programme
   type t2 = Ast.AstTds.programme
-
+(** renvoie l'info ast d'un affectable *)
 let rec get_ia_affectable a = 
   match a with
   | Deref(aff) ->  get_ia_affectable aff
@@ -44,7 +44,7 @@ and
     get_ia ial n
   | _ -> failwith "mauvais type"
 
-
+(* renvoie le type réel d'un type *)
 let rec analyse_tds_type tds typ =
   match typ with
     | Tid(tid) -> 
@@ -80,7 +80,7 @@ let rec analyse_tds_type tds typ =
           Record(npl)
         
     | _ -> typ
-
+  (* analyse de définition d'un type *)
 let analyse_tds_deftype tds (AstSyntax.Typedef(tid,typ)) = 
   match Tds.chercherLocalement tds tid with
     | Some _ -> raise (DoubleDeclaration tid)
@@ -121,9 +121,11 @@ let rec analyse_tds_affectation a modife tds =
 
       end
     end
+    (* déréférencement d'un pointeur *)
   | AstSyntax.Deref aff -> 
     let na =analyse_tds_affectation aff modife tds in
     AstTds.Deref(na)
+    (*Acces à un champs *)
   | AstSyntax.Champ(aff,n) ->
     let na =analyse_tds_affectation aff modife tds in
         let iaaff= get_ia_affectable na in
@@ -189,6 +191,7 @@ let rec analyse_tds_expression tds e =
       | _ -> raise (MauvaiseUtilisationIdentifiant id) 
       end 
     end
+    (* création d'un enregistrement *)
   | AstSyntax.Enre(le) ->
     let nle = List.map (analyse_tds_expression tds) le in
     
@@ -220,6 +223,7 @@ let rec analyse_tds_instruction tds i =
             let info = 
               begin 
               match typ with
+                (* si c'est un enregistrement on doit aussi ajouter les champs *)
                 | Type.Record(lc) ->
                   let tdsenre = creerTDSFille tds in
                   let ajouter_champs (typage, x) =
@@ -257,6 +261,7 @@ let rec analyse_tds_instruction tds i =
             il a donc déjà été déclaré dans le bloc courant *) 
             raise (DoubleDeclaration n)
       end
+      (*affectation à une variable *)
   | AstSyntax.Affectable (aff,e) ->
     let na = analyse_tds_affectation aff true tds in
     let ne = analyse_tds_expression tds e in
@@ -302,7 +307,7 @@ let rec analyse_tds_instruction tds i =
       (* Analyse de l'expression *)
       let ne = analyse_tds_expression tds e in
       Retour (ne)
-
+      (* Assignation plus : on renvoit un binaire qui correspond à l'assignation voulue  *)
   | AstSyntax.AssignationPlus (a,e) ->
       let na = analyse_tds_affectation a true tds in
       let ne = analyse_tds_expression tds e in
@@ -350,6 +355,7 @@ let analyse_tds_fonction maintds (AstSyntax.Fonction(t,n,lp,li))  =
           begin
           let typ = analyse_tds_type maintds typage in 
           match typ with
+          (* si c'est un enregistrement on doit aussi ajouter les champs *)
           | Record(lc) ->
             
             let tdsenre = creerTDSFille maintds in
