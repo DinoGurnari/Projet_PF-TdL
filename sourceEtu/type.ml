@@ -10,7 +10,8 @@ let rec string_of_type t =
   | Adr(typ) -> "Adress of " ^ string_of_type typ
   | Null -> "Null"
   | Tid(tid) -> tid
-  
+  | RecordTds(tl)-> List.fold_left(fun s t -> s ^ (string_of_type t)) "" tl
+  | Record _ -> "aou"  
 
 
 let rec est_compatible t1 t2 =
@@ -71,7 +72,9 @@ let rec getTaille t =
   | Undefined -> 0
   | Adr(typ) -> getTaille typ
   | Null -> 0
-  
+  | Tid _ -> failwith "getTaille de Tid"
+  | RecordTds(tl) -> List.fold_left(fun cb t -> cb + (getTaille t)) 0 tl
+  | Record _ -> 0
 let%test _ = getTaille Int = 1
 let%test _ = getTaille Bool = 1
 let%test _ = getTaille Rat = 2

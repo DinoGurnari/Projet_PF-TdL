@@ -1,6 +1,6 @@
 main{
-    typedef Point2D = struct {int x int y} ;
-    Point2D p1 = {3 4}; 
-    int a = 1;
-    print a;
+    struct {int x rat y} p = {3 [3/4]};
+    print (p.x);
+    (p.y) = [1/((p.x)+1)];
+    print (p.y);
 }

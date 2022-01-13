@@ -26,7 +26,7 @@ let rec analyse_type_affectation a =
         raise (TypeNonDeferencable(typ))
       end 
   |AstTds.Champ(aff,ia) ->
-    let (na,typ) = analyse_type_affectation aff in
+    let (na,_) = analyse_type_affectation aff in
       (AstType.Champ(na,ia),getType ia)
 
 
@@ -125,7 +125,7 @@ let rec analyse_type_expression e =
     begin
     match typ with 
     | Undefined -> raise (TypeNonInstantiable(typ)) 
-    | Adr t  -> raise (TypeNonInstantiable(typ))
+    | Adr _  -> raise (TypeNonInstantiable(typ))
     | Null -> raise (TypeNonInstantiable(typ))
     | _ ->
     (AstType.New , Adr(typ))
@@ -156,10 +156,14 @@ let rec analyse_type_instruction tf i =
     
     match t with
       | Record lp ->
-            
-            let listtyp = List.map(fun (t,_)-> modifier_type_info t ia;t) lp in
+            begin
+            match info_ast_to_info ia with
+            | InfoEnre(_,_,ial,_,_,_) ->
+
+            let listtyp = List.map2(fun (t,_) ia1 -> modifier_type_info t ia1;t) lp ial in
             modifier_type_info_enre listtyp ia
-            
+            | _ -> failwith "pas possible"
+            end
 
       | _ -> modifier_type_info t ia
           

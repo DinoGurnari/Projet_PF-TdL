@@ -55,6 +55,7 @@ struct
     match a with
     | Deref a -> string_of_affectation a
     | Ident n -> n^" "
+    | Champ(a,n) -> string_of_affectation a ^ n^" "
 
 
   (* Conversion des expressions *)
@@ -74,6 +75,7 @@ struct
     | Null -> "Null "
     | New(typ) -> "New " ^ (string_of_type typ) ^ " "
     | Adr(id) -> "Adresse de " ^ id ^ " "
+    | Enre(exprlist) -> "record {" ^ ((List.fold_right (fun e tq -> (string_of_expression e)^tq) exprlist ""))^"} "
 
   (* Conversion des instructions *)
   let rec string_of_instruction i =

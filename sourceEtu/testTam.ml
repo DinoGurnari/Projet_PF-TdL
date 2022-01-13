@@ -130,8 +130,14 @@ let%expect_test "deftype1" =
   runtam "../../fichiersRat/src-rat-deftype-test/deftype1.rat";
   [%expect{| 3 |}]
 let%expect_test "deftype2" =
-  runtam "../../fichiersRat/src-rat-deftype-test/deftype1.rat";
+  runtam "../../fichiersRat/src-rat-deftype-test/deftype2.rat";
   [%expect{| 3 |}]
+let%expect_test "deftype3" =
+  runtam "../../fichiersRat/src-rat-deftype-test/deftype3.rat";
+  [%expect{| 7 |}]
 let%expect_test "enre1" =
   runtam "../../fichiersRat/src-rat-enre-test/testenre1.rat";
-  [%expect{| 1 |}]
+  [%expect{| 3[1/4] |}]
+let%expect_test "enre2" =
+  runtam "../../fichiersRat/src-rat-enre-test/testenre2.rat";
+  [%expect{| 4835 |}]

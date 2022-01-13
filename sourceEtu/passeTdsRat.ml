@@ -42,7 +42,7 @@ let analyse_tds_deftype tds (AstSyntax.Typedef(tid,typ)) =
         
 
 
-let rec analyse_tds_affectation a modife enregistrement tds =
+let rec analyse_tds_affectation a modife tds =
 
   match a with 
   | AstSyntax.Ident(id) ->
@@ -66,31 +66,31 @@ let rec analyse_tds_affectation a modife enregistrement tds =
       | InfoVar _ -> 
         AstTds.Ident(ia)
       | InfoEnre _ ->
-        if enregistrement then
-          AstTds.Ident(ia)
-        else
-          raise (MauvaiseUtilisationIdentifiant id)
+        AstTds.Ident(ia)
+        
 
       end
     end
   | AstSyntax.Deref aff -> 
-    let na =analyse_tds_affectation aff modife enregistrement tds in
+    let na =analyse_tds_affectation aff modife tds in
     AstTds.Deref(na)
   | AstSyntax.Champ(aff,n) ->
-    let na =analyse_tds_affectation aff modife true tds in
-        
-        match na with
+    let na =analyse_tds_affectation aff modife tds in
+        match chercherGlobalement tds n with
+        | None -> raise(IdentifiantNonDeclare(n))
+        | Some ia -> AstTds.Champ(na,ia)
+        (* match na with
         | AstTds.Ident(ia) ->
           begin
             match info_ast_to_info ia with
             | InfoEnre(_,_,ial,_,_,_) ->
               if (List.mem ia ial) then
-                AstTds.Champ(na,ia)
+                
               else
                 raise (ChampNonDeclare(n))
             | _ -> failwith "impossible"
           end
-        | _ -> failwith "impossible"
+        | _ -> failwith "impossible" *)
    
 
 
@@ -132,7 +132,7 @@ let rec analyse_tds_expression tds e =
   | AstSyntax.Binaire(bin, expression1, expression2) ->
     AstTds.Binaire(bin, analyse_tds_expression tds expression1, analyse_tds_expression tds expression2)
   | AstSyntax.Affectation(aff) ->
-    let na = analyse_tds_affectation aff false false tds in
+    let na = analyse_tds_affectation aff false tds in
       AstTds.Affectation(na)
   | AstSyntax.Null ->
     AstTds.Null
@@ -215,7 +215,7 @@ let rec analyse_tds_instruction tds i =
             raise (DoubleDeclaration n)
       end
   | AstSyntax.Affectable (aff,e) ->
-    let na = analyse_tds_affectation aff true false tds in
+    let na = analyse_tds_affectation aff true tds in
     let ne = analyse_tds_expression tds e in
     AstTds.Affectation (na,ne)
   | AstSyntax.Constante (n,v) -> 
@@ -261,7 +261,7 @@ let rec analyse_tds_instruction tds i =
       Retour (ne)
 
   | AstSyntax.AssignationPlus (a,e) ->
-      let na = analyse_tds_affectation a true false tds in
+      let na = analyse_tds_affectation a true tds in
       let ne = analyse_tds_expression tds e in
         AstTds.Affectation(na,AstTds.Binaire(Plus,AstTds.Affectation(na),ne)) 
   | AstSyntax.DeclarationType (deftype) ->

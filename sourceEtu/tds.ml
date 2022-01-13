@@ -60,6 +60,9 @@ let getType ia =
   | InfoConst _ -> Int
   | InfoVar (_, t, _, _) -> t
   | InfoFun (_, t, _) -> t
+  | InfoEnre (_,tl,_,_,_,_) -> RecordTds(tl)
+  | InfoType (_,t) -> t
+
   
 
 let getTaille ia =
@@ -357,6 +360,8 @@ let string_of_info info =
   | InfoVar (n,t,dep,base) -> "Variable "^n^" : "^(string_of_type t)^" "^(string_of_int dep)^"["^base^"]"
   | InfoFun (n,t,tp) -> "Fonction "^n^" : "^(List.fold_right (fun elt tq -> if tq = "" then (string_of_type elt) else (string_of_type elt)^" * "^tq) tp "" )^
                       " -> "^(string_of_type t)
+  | InfoType (n,t) -> "Type "^n^" : "^ (string_of_type t)
+  | InfoEnre (n,tl,_,_,dep,base) -> "Enregistrement "^n^" : "^(List.fold_right (fun elt tq -> if tq = "" then (string_of_type elt) else (string_of_type elt)^" * "^tq) tl "" )^" "^(string_of_int dep)^"["^base^"]"
 
 (* Affiche la tds locale *)
 let afficher_locale tds =

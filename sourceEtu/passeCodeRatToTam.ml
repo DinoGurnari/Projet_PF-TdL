@@ -47,7 +47,29 @@ let rec generation_code_affectation aff modifie =
         else
           "LOAD (" ^ string_of_int l ^ ") " ^ adr ^ "\n" 
       end
-    | InfoFun _ -> failwith "pas possible"
+    | InfoEnre(_,_,ial,_,_,_) -> 
+      let string_ia ia =
+        let adr = getAdresse ia in
+        let l = Tds.getTaille ia in 
+        begin
+        match t with
+        | Adr(_) ->
+          
+          if modifie then
+            "STORE (1) " ^ adr  ^ "\n"
+          else
+            "LOAD (1) " ^ adr  ^ "\n"
+        | _ ->
+          if modifie then
+            "STORE (" ^ string_of_int l ^ ") " ^ adr ^ "\n" 
+          else
+            "LOAD (" ^ string_of_int l ^ ") " ^ adr ^ "\n" 
+        end
+      in
+      List.fold_left(fun code ia -> code ^ (string_ia ia)) "" ial
+
+
+    | _ -> failwith "pas possible"
     end
   |AstType.Deref(a) ->
     let code_a = generation_code_affectation a false in
@@ -56,7 +78,7 @@ let rec generation_code_affectation aff modifie =
       code_a ^ "STOREI (" ^ string_of_int taille_a ^ ")\n"
     else
       code_a ^ "LOADI (" ^ string_of_int taille_a ^ ")\n"
-  |AstType.Champ(aff,ia) -> 
+  |AstType.Champ(_,ia) -> 
     let adr = getAdresse ia in
     let l = Tds.getTaille ia in
         if modifie then
@@ -186,14 +208,8 @@ and generation_code_bloc ia li =
   let isDeclaration b =
     match b with 
     | AstType.Declaration(ia,_) ->
-      let t = getType ia in
-      begin
-      match t with 
-      | Rat ->
-        2
-      | _ -> 
-        1
-      end
+      
+      Tds.getTaille ia
     | _ -> 
       0
     in
@@ -210,8 +226,7 @@ let generation_code_fonction (AstPlacement.Fonction(ia,_,li))  =
   match info_ast_to_info ia with
     | InfoFun(nom,_,_) -> 
       nom ^ "\n" ^ code_li ^ "\nHALT\n\n"
-    | InfoConst(_) -> failwith "Pas possible(const)"
-    | InfoVar(_) -> failwith "pas possible(var)"
+    | _ -> failwith "Fonction crée avec autre chose qu'une InfoFun"
   
 
 (* analyser : AstPlacement.ast -> String *)
