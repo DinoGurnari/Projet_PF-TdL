@@ -2,6 +2,7 @@ typedef Point2D = struct {int x int y};
 typedef VecteurTranslation = struct {int dx int dy};
 Point2D translate (Point2D p VecteurTranslation v){
     return {((p.x)+(v.dx)) ((p.y)+(v.dy))};
+
 }
 main{
     Point2D p1 = {3 4};

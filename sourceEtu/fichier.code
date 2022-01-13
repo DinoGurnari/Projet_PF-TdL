@@ -1,4 +1,4 @@
-; /home/vlebrun2/Annee_2/PF/TP-TdL/sourceEtu/fichiersRat/src-rat-pointeur-test/testpointeur2.rat
+; /home/vlebrun2/Annee_2/PF/TP-TdL/sourceEtu/fichiersRat/src-rat-enre-test/testenre2.rat
 JUMP main
 
 pgcd
@@ -70,27 +70,57 @@ SUBR IMul
 CALL (ST) norm
 RETURN (2) 4
 
+translate
+LOAD (1) -4[LB]
+
+LOAD (1) -2[LB]
+
+SUBR IAdd
+LOAD (1) -3[LB]
+
+LOAD (1) -1[LB]
+
+SUBR IAdd
+RETURN (2) 4
+POP (0) 0
+
+HALT
+
 main
-PUSH 1
-LOADL 1
-SUBR MAlloc
-STORE (1) 0[SB]
+PUSH 2
+LOADL 3
 LOADL 4
+STORE (2) 0[SB]
+PUSH 2
+LOADL 2
+LOADL 1
+STORE (2) 2[SB]
+PUSH 2
+LOADL 1
+LOADL 4
+STORE (2) 4[SB]
+PUSH 2
 LOAD (1) 0[SB]
-STOREI (1)
-PUSH 1
-LOADL 18
-STORE (1) 1[SB]
-PUSH 1
-LOADA 1[SB]
-STORE (1) 2[SB]
-LOAD (1) 0[SB]
-LOADI (1)
+LOAD (1) 1[SB]
+LOAD (1) 4[SB]
+LOAD (1) 5[SB]
+CALL (SB) translate
+STORE (2) 6[SB]
+PUSH 2
 LOAD (1) 2[SB]
-STOREI (1)
-LOAD (1) 2[SB]
-LOADI (1)
+LOAD (1) 3[SB]
+LOAD (1) 4[SB]
+LOAD (1) 5[SB]
+CALL (SB) translate
+STORE (2) 8[SB]
+LOAD (1) 6[SB]
 SUBR IOut
-POP (0) 3
+LOAD (1) 7[SB]
+SUBR IOut
+LOAD (1) 8[SB]
+SUBR IOut
+LOAD (1) 9[SB]
+SUBR IOut
+POP (0) 10
 
 HALT

@@ -1,5 +1,8 @@
+typedef P = struct {int x rat y};
+
 main{
-    struct {int x rat y} p = {3 [3/4]};
+    P p = {3 [3/4]};
+    P p2 = {3 [3/4]};
     print (p.x);
     (p.y) = [1/((p.x)+1)];
     print (p.y);

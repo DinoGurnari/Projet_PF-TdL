@@ -141,3 +141,9 @@ let%expect_test "enre1" =
 let%expect_test "enre2" =
   runtam "../../fichiersRat/src-rat-enre-test/testenre2.rat";
   [%expect{| 4835 |}]
+let%expect_test "enre3" =
+  runtam "../../fichiersRat/src-rat-enre-test/testenre3.rat";
+  [%expect{| 12 |}]
+let%expect_test "out" =
+  runtam "../../fichiersRat/ouais.rat";
+  [%expect{| [13/-12][1/6]false[-221/84][1/-14] |}]

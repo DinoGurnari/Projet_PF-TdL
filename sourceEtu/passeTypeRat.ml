@@ -46,8 +46,7 @@ let rec analyse_type_expression e =
       begin
       match info with
       | InfoFun (_, _, listTypesPara) -> 
-        let egalite = List.equal (fun x y -> x = y) listTypesExp listTypesPara in
-        if egalite then
+        if est_compatible_list listTypesExp listTypesPara then
           (AstType.AppelFonction(ia, listExpSansTypes), getType ia)
         else
           raise (TypesParametresInattendus (listTypesExp, listTypesPara))
@@ -158,9 +157,8 @@ let rec analyse_type_instruction tf i =
       | Record lp ->
             begin
             match info_ast_to_info ia with
-            | InfoEnre(_,_,ial,_,_,_) ->
-
-            let listtyp = List.map2(fun (t,_) ia1 -> modifier_type_info t ia1;t) lp ial in
+            | InfoEnre(_,_,_,_,_,_) ->
+              let listtyp = List.map(fun (t,_) ->t) lp in
             modifier_type_info_enre listtyp ia
             | _ -> failwith "pas possible"
             end
@@ -239,6 +237,17 @@ en une fonction de type AstType.fonction *)
 (* Erreur si mauvaise utilisation des types *)
 let analyse_type_fonction (AstTds.Fonction(t,ia,lp,li))  =
   let analyser_type_para (t, ia) =
+    match info_ast_to_info ia with
+    | InfoEnre _ ->
+      begin
+      match t with
+      | RecordTds(lp) -> 
+        
+        modifier_type_info_enre lp ia;
+        ia
+      | _ -> failwith "ceci n pas possible"
+      end
+    | _ -> 
     modifier_type_info t ia;
     ia
   in

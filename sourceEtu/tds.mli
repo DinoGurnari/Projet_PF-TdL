@@ -86,3 +86,5 @@ val getAdresse: info_ast -> string
 
 (* Renvoie le type d'une info ast *)
 val getTaillePara: info_ast -> int
+
+val getNom: info_ast -> string

@@ -47,7 +47,7 @@ type expression =
   | Adr of string
   (* Enregistrement*)
   | Enre of expression list
-(* affectation possible de Rat *)
+(* affectation possible de Rat *) 
 and affectable =
   (* Accès à la valeur pointée (en lecteur ou écriture) *)
   | Deref of affectable

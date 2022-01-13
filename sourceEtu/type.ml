@@ -1,6 +1,13 @@
 type typ = Bool | Int | Rat | Undefined | Adr of typ | Null | Tid of string | Record of (typ * string) list
 | RecordTds of typ list
 
+let rec record_to_typlist (Record(tial)) =
+  match tial with
+  | [] -> []
+  |(t,_)::q -> t::record_to_typlist (Record(q))
+
+
+
 let rec string_of_type t = 
   match t with
   | Bool ->  "Bool"
@@ -11,7 +18,7 @@ let rec string_of_type t =
   | Null -> "Null"
   | Tid(tid) -> tid
   | RecordTds(tl)-> List.fold_left(fun s t -> s ^ (string_of_type t)) "" tl
-  | Record _ -> "aou"  
+  | Record _ -> "Record"  
 
 
 let rec est_compatible t1 t2 =
@@ -25,13 +32,15 @@ let rec est_compatible t1 t2 =
   | Record(lp), Record(lp2) -> 
     let listtyp1 = List.map(fun (t,_)->t) lp in
     let listtyp2 = List.map(fun (t,_)->t) lp2 in
-    est_compatible_list listtyp1 listtyp2
+      est_compatible_list listtyp1 listtyp2
   | Record(lp), RecordTds(lp2) ->
     let listtyp1 = List.map(fun (t,_)->t) lp in
       est_compatible_list listtyp1 lp2
   | RecordTds(lp2), Record(lp) ->
     let listtyp1 = List.map(fun (t,_)->t) lp in
       est_compatible_list listtyp1 lp2
+  | RecordTds(lp1), RecordTds(lp2) ->
+      est_compatible_list lp1 lp2
   | _ -> false 
 and est_compatible_list lt1 lt2 =
   try
@@ -74,7 +83,7 @@ let rec getTaille t =
   | Null -> 0
   | Tid _ -> failwith "getTaille de Tid"
   | RecordTds(tl) -> List.fold_left(fun cb t -> cb + (getTaille t)) 0 tl
-  | Record _ -> 0
+  | Record tl ->  List.fold_left(fun cb (t,_) -> cb + (getTaille t)) 0 tl
 let%test _ = getTaille Int = 1
 let%test _ = getTaille Bool = 1
 let%test _ = getTaille Rat = 2

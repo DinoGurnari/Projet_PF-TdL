@@ -1,0 +1,53 @@
+typedef Droite = struct {rat pente rat ordonneOrigine} ;
+typedef Position = struct {rat* x rat* y} ;
+typedef PositionOption = struct {bool empty Position val} ;
+rat divRat (rat n rat d){
+return [(num n * denom d)/(num d * denom n)];
+}
+rat moinsRat (rat r1 rat r2){
+return (r1 + ([-1/1] * r2));
+}
+bool eqRat (rat r1 rat r2){
+// artifice pour ˆetre sur qu’ il n’y a pas de soucis avec la normalisation / + appelle la fonction de normalisation
+rat m = call moinsRat (r1 r2);
+return (num m = 0);
+}
+PositionOption intersection (Droite d1 Droite d2){
+if (call eqRat ((d1.pente) (d2.pente))){
+return {true {null null}};
+
+}else{
+rat* pxi = (new rat);
+rat xi = call divRat (
+(call moinsRat ((d1.ordonneOrigine) (d2.ordonneOrigine)))
+(call moinsRat ((d2.pente) (d1.pente))));
+(*pxi) = xi;
+rat* pyi = (new rat);
+(*pyi) = (((d1.pente)*xi)+(d1.ordonneOrigine));
+Position i = {pxi pyi};
+return {false i };
+}
+}
+bool printPositionOption (PositionOption po){
+if (po.empty){
+print false ;
+} else {
+print (*((po.val).x));
+print (*((po.val).y));
+}
+return (po.empty);
+}
+main {
+Droite d1 = {[2/13] [1/3]};
+rat a = [1/13];
+rat b = [1/4];
+int i = 1 ;
+while (i < 4){
+Droite d2 = {a b};
+PositionOption po = call intersection (d1 d2);
+bool e = call printPositionOption (po);
+a += [1/13];
+b += [1/7];
+i += 1;
+}
+}

@@ -64,13 +64,7 @@ let rec analyse_placement_param dep rlp =
   match rlp with
     | [] -> []
     | ia :: q -> 
-      let getTaille  ia = 
-        let typ = getType ia in
-        match typ with
-          | Rat -> 2
-          | _ -> 1
-      in
-        let d = getTaille ia in 
+        let d = Tds.getTaille ia in
           modifier_adresse_info (dep - d) "LB" ia;
           ia::(analyse_placement_param (dep - d) q)
 

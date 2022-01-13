@@ -63,11 +63,17 @@ let getType ia =
   | InfoEnre (_,tl,_,_,_,_) -> RecordTds(tl)
   | InfoType (_,t) -> t
 
-  
-
+let getNom ia = 
+  let info = info_ast_to_info ia in
+  match info with
+  | InfoConst (n,_) -> n
+  | InfoVar (n, _, _, _) -> n
+  | InfoFun (n, _, _) -> n
+  | InfoEnre (n,_,_,_,_,_) -> n
+  | InfoType (n,_) -> n
 let getTaille ia =
   match info_ast_to_info ia with
-  | InfoEnre(_,_,_,t,_,_) -> t
+  | InfoEnre(_,tl,_,_,_,_) -> List.fold_left(fun cpt t -> cpt + getTaille t) 0 tl
   | _ ->
     let typ = getType ia in
     getTaille typ
@@ -414,11 +420,21 @@ let%test _ =
   | InfoFun ("f", Rat, [Int ; Int]) -> true
   | _ -> false
  
+  let rec modifier_adresse_enre_ia d b ial =
+     match ial with
+     | ia::iaq -> 
+       modifier_adresse_info d b ia;
+       let t = getTaille ia in
+        modifier_adresse_enre_ia (d+t) b iaq;
+     | [] -> ()
+
 (* Modifie l'emplacement (dépl, registre) si c'est une InfoVar, ne fait rien sinon *)
- let modifier_adresse_info d b i =
+ and modifier_adresse_info d b i =
      match !i with
      |InfoVar (n,t,_,_) -> i:= InfoVar (n,t,d,b)
-     |InfoEnre (n,t,ial,l,_,_) -> i:= InfoEnre (n,t,ial,l,d,b)
+     |InfoEnre (n,t,ial,l,_,_) -> 
+      modifier_adresse_enre_ia d b ial;
+      i:= InfoEnre (n,t,ial,l,d,b)
      | _ -> failwith "Appel modifier_adresse_info pas sur un InfoVar"
 
  let modifier_taille_enregistrement l i =
@@ -426,13 +442,7 @@ let%test _ =
     | InfoEnre(n,t,ial,_,d,b) -> i:= InfoEnre (n,t,ial,l,d,b)
     | _ -> failwith "Appel modifier_taille_enregistrement pas sur un InfoEnre"
 
- let rec modifier_adresse_enre_ia d b ial =
-     match ial with
-     | ia::iaq -> 
-       modifier_adresse_info d b ia;
-       let t = getTaille ia in
-        modifier_adresse_enre_ia (d+t) b iaq;
-     | [] -> ()
+
 
 let%test _ = 
   let info = InfoVar ("x", Rat, 4 , "SB") in
