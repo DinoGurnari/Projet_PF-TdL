@@ -18,8 +18,6 @@ let rec get_ia_affectable a =
   | Champ(aff,n) -> get_ia_champ (get_ia_affectable aff) (getNom n) true
 and 
   get_ia_champ ia n bool =
-  let nom = getNom ia in
-         print_string (nom^ "\n");
   match info_ast_to_info ia with
   | InfoEnre(nomenre,_,ial,_,_,_) ->
     
@@ -29,11 +27,6 @@ and
     | [] -> failwith "n pas champs"
     | ia::q -> 
       let nom = getNom ia in
-        (* print_string nom;
-        print_string " ";
-        print_string id;
-        print_string (" "^string_of_bool bool);
-        print_string "\n"; *)
         if (bool) then
           
           if String.equal nom (id) then
@@ -49,10 +42,7 @@ and
     end
     in
     get_ia ial n
-  | InfoConst _-> failwith "const"
-  | InfoVar _-> failwith "var"
-  | InfoFun _-> failwith "fun"
-  | InfoType _-> failwith "type"
+  | _ -> failwith "mauvais type"
 
 
 let rec analyse_tds_type tds typ =
@@ -85,7 +75,7 @@ let rec analyse_tds_type tds typ =
         raise (DoubleDeclaration x)
         end
         in
-        let nlc = List.map (ajouter_champs) pl in
+        let _ = List.map (ajouter_champs) pl in
         let npl = List.map (fun (t,x) -> (analyse_tds_type tds t,x)) pl in
           Record(npl)
         
@@ -139,18 +129,7 @@ let rec analyse_tds_affectation a modife tds =
         let iaaff= get_ia_affectable na in
         let lerucarenvoyer = get_ia_champ iaaff n false in
         Champ(na,lerucarenvoyer)
-        (* match na with
-        | AstTds.Ident(ia) ->
-          begin
-            match info_ast_to_info ia with
-            | InfoEnre(_,_,ial,_,_,_) ->
-              if (List.mem ia ial) then
-                
-              else
-                raise (ChampNonDeclare(n))
-            | _ -> failwith "impossible"
-          end
-        | _ -> failwith "impossible" *)
+        
    
 
 

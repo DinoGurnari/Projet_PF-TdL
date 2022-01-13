@@ -1,10 +1,15 @@
 type typ = Bool | Int | Rat | Undefined | Adr of typ | Null | Tid of string | Record of (typ * string) list
 | RecordTds of typ list
 
-let rec record_to_typlist (Record(tial)) =
-  match tial with
-  | [] -> []
-  |(t,_)::q -> t::record_to_typlist (Record(q))
+let rec record_to_typlist (typ) =
+  match typ with
+  | Record(tial) ->
+    begin
+    match tial with
+    | [] -> []
+    |(t,_)::q -> t::record_to_typlist (Record(q))
+    end
+  | _ -> failwith "pas besoin"
 
 
 
